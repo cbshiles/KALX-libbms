@@ -29,6 +29,28 @@ namespace functional {
 		};
 	}
 
+	template<size_t K>
+	struct basis_spline {
+		template<class T, class U>
+		T value(T x, size_t i, size_t n, const U* t)
+		{
+			T b  = basis_spline<T,U>::value<K-1>(i, n, t)(x);
+			T b_ = basis_spline<T,U>::value<K-1>(i + 1, n, t)(x);
+			T dt  = static_cast<T>(t[i + k] - t[i]);
+			T dt_ = static_cast<T>(t[i + k + 1] - t[i + 1];
+
+			return (x - t[i])*b/dt + (t[i + k + 1] - x)*b_/dt_);
+		}
+	};
+	template<>
+	struct basis_spline<0> {
+		template<class T, class U>
+		T value(T x, size_t i, size_t n, const U* t)
+		{
+			return 1*(t[i] <= x && x < t[i + 1]); };
+		}
+	};
+
 	template<class T, class U>
 	inline std::function<T(T)> bspline(const U* a, size_t k, size_t n, const U* t)
 	{

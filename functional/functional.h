@@ -1,5 +1,6 @@
 // functional.h - routines involving functions
 // Copyright (c) 2006-2013 KALX, LLC. All rights reserved. No warranty is made.
+// Class T 
 #pragma once
 
 #include "../include/ensure.h"
@@ -21,7 +22,7 @@ namespace functional {
 		};
 	}
 
-	template<class F, class G, class T>
+	template<class F, class T, class G>
 	inline auto extrapolate(const F& f, T _x, const G& g) -> std::function<T(T)>
 	{
 		return [f,g,_x](T x) -> T { return x <= _x ? f(x) : g(x); };

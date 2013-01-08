@@ -78,13 +78,16 @@ void test_srng(size_t N = 10000)
 
 	// test uniform to 3 standard deviations
 	for (size_t i = 0; i < 10; ++i)
-		ensure (abs(hist[i] - N/10) <= 3*sqrt(N/10.));
+		ensure (std::abs(hist[i] - N/10) <= 3*sqrt(N/10.));
 
 	ensure (min < 2.*sqrt(1./N));
 	ensure (1 - max < 2.*sqrt(1./N));
 	
 }
 
+#ifdef __GNUC__
+#define _nextafter nextafter
+#endif
 void test_ulp(size_t N = 10000)
 {
 	srng rng;

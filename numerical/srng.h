@@ -9,7 +9,7 @@
 #else
 #include <fstream>
 #endif
-#include <xutility>
+#include <utility>
 
 using namespace std::rel_ops;
 
@@ -60,7 +60,7 @@ namespace numerical {
 		}
 		bool operator<(const srng& rng) const
 		{
-			return s_[0] < rng.s_[0] || s_[0] == rng.s_[0] && s_[1] < rng.s_[1];
+			return s_[0] < rng.s_[0] || (s_[0] == rng.s_[0] && s_[1] < rng.s_[1]);
 		}
 #ifdef _WIN32
 		// store state in registry
@@ -79,13 +79,13 @@ namespace numerical {
 #else
 		void save(void) const 
 		{
-			ofstream ofs("srng.seed");
+			std::ofstream ofs("srng.seed");
 
 			ofs << s_[0] << " " << s_[1];
 		}
 		void load(void)
 		{
-			ifstream ifs("srng.seed");
+			std::ifstream ifs("srng.seed");
 
 			if (ifs.good())
 				ifs >> s_[0] >> s_[1]; 

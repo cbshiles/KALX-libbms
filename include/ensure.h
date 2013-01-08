@@ -1,13 +1,18 @@
-// ensure.h - works like assert, but throws an exception
+// ensure.h - works like assert, but throws an exception in release mode, and sets a break point in debug mode
 // Copyright (c) 2006 KALX, LLC. All rights reserved. No warranty is made.
 //
 // #define ensure(x)
+// or
+// #define NENSURE
 // before including to turn ensure checking off
-//
-// #define ENSURE_BREAK to set breakpoint instead of throwing exception
+
 #pragma once
 #include <iosfwd>
 #include <stdexcept>
+
+#ifdef NENSURE
+#define ensure(x)
+#endif
 
 #ifndef ensure
 
@@ -18,18 +23,15 @@
 #define ENSURE_LINE "line: " ENSURE_STRZ_(__LINE__)
 #define ENSURE_SPOT ENSURE_FILE "\n" ENSURE_LINE "\n" ENSURE_FUNC
 
-#ifdef ENSURE_BREAK
-#ifdef _WIN32 // defined for 64 bit also
-#define ensure(e) if (!(e)) { DebugBreak(); }
-#elif defined(__GNUC__)
-#define ensure(e) if (!(e)) { __builtin_trap(); }
+#ifdef _DEBUG
+	#ifdef _WIN32 // defined for 64 bit also
+		#include <Windows.h>
+		#define ensure(e) if (!(e)) { DebugBreak(); }
+	#elif defined(__GNUC__)
+		#define ensure(e) if (!(e)) { __builtin_trap(); }
+	#endif
+#else // release
+	#define ensure(e) if (!(e)) {throw std::runtime_error(ENSURE_SPOT "\nensure: \"" #e "\" failed");}
 #endif
-
-#else // throw exception
-#define ensure(e) if (!(e)) {throw std::runtime_error(ENSURE_SPOT "\nensure: \"" #e "\" failed");}
-#endif
-
-#define ENSURE_TRY(block) try { block } catch (const std::exception& ex) { std::cerr << ex.what() << std::endl; }
 
 #endif // ensure
-
