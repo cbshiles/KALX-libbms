@@ -29,7 +29,7 @@ void test_apply_iterator(void)
 	for (auto k = apply([](T x) { return x*x; }, t); k != t + 3; ++k, ++pt)
 		ensure (*k == (*pt)*(*pt));
 
-	auto l = apply(static_cast<T(*)(T)>(exp), t);
+	auto l = apply((T(*)(T))exp, t);
 	ensure (*l++ == exp(t[0]));
 	ensure (*l++ == exp(t[1]));
 	ensure (*l++ == exp(t[2]));

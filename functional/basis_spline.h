@@ -23,31 +23,31 @@ namespace functional {
 			T b  = basis_spline<T,U>(i, k - 1, n, t)(x);
 			T b_ = basis_spline<T,U>(i + 1, k - 1, n, t)(x);
 			T dt  = static_cast<T>(t[i + k] - t[i]);
-			T dt_ = static_cast<T>(t[i + k + 1] - t[i + 1];
+			T dt_ = static_cast<T>(t[i + k + 1] - t[i + 1]);
 
-			return (x - t[i])*b/dt + (t[i + k + 1] - x)*b_/dt_);
+			return (x - t[i])*b/dt + (t[i + k + 1] - x)*b_/dt_;
 		};
 	}
 
 	template<size_t K>
-	struct basis_spline {
+	struct basis_spline_struct {
 		template<class T, class U>
 		T value(T x, size_t i, size_t n, const U* t)
 		{
-			T b  = basis_spline<T,U>::value<K-1>(i, n, t)(x);
-			T b_ = basis_spline<T,U>::value<K-1>(i + 1, n, t)(x);
-			T dt  = static_cast<T>(t[i + k] - t[i]);
-			T dt_ = static_cast<T>(t[i + k + 1] - t[i + 1];
+			T b  = basis_spline_struct<K-1>::value(x, i, n, t);
+			T b_ = basis_spline_struct<K-1>::value(x, i + 1, n, t);
+			T dt  = static_cast<T>(t[i + K] - t[i]);
+			T dt_ = static_cast<T>(t[i + K + 1] - t[i + 1]);
 
-			return (x - t[i])*b/dt + (t[i + k + 1] - x)*b_/dt_);
+			return (x - t[i])*b/dt + (t[i + K + 1] - x)*b_/dt_;
 		}
 	};
 	template<>
-	struct basis_spline<0> {
+	struct basis_spline_struct<0> {
 		template<class T, class U>
 		T value(T x, size_t i, size_t n, const U* t)
 		{
-			return 1*(t[i] <= x && x < t[i + 1]); };
+			return 1*(t[i] <= x && x < t[i + 1]);
 		}
 	};
 

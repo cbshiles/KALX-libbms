@@ -3,6 +3,7 @@
 // Class T 
 #pragma once
 
+#include <limits>
 #include "../include/ensure.h"
 #include "apply_iterator.h"
 #include "basis_spline.h"
@@ -13,7 +14,7 @@ namespace functional {
 	template<class F>
 	inline auto derivative(const F& f) -> std::function<decltype(f(0))(decltype(f(0)))>
 	{
-		typedef typename decltype(f(0)) T;
+		typedef decltype(f(0)) T;
 
 		return [f](T x) -> T {
 			T h = sqrt(std::numeric_limits<T>::epsilon());
@@ -31,7 +32,7 @@ namespace functional {
 	template<class F>
 	inline auto integral(const F& f, size_t n = 100) -> std::function<decltype(f(0))(decltype(f(0)))>
 	{
-		typedef typename decltype(f(0)) T;
+		typedef decltype(f(0)) T;
 
 		// integral from 0 to x !!! replace with Romberg
 		return [f,n](T x) -> T {
