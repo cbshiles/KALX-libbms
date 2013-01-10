@@ -1,18 +1,17 @@
 // grassmann.h - Grassman algebra
 #pragma once
 #include "../include/ensure.h"
+#include <algorithm>
 #include <bitset>
 #include <map>
 #include <utility>
 
 using namespace std::rel_ops;
 
-#define T double
-
 namespace grassmann {
 
 	// a P_i1 .. P_ik, i1 < ... < ik
-	template<size_t N>
+	template<size_t N, class T = double>
 	struct extensor : public std::bitset<N> {
 		extensor()
 			: std::bitset<N>()
@@ -23,14 +22,20 @@ namespace grassmann {
 		extensor(const extensor& A)
 			: std::bitset<N>(A)
 		{ }
+		extensor(const std::bitset<N>& A)
+			: std::bitset<N>(A)
+		{ }
 		extensor(const extensor&& A)
+			: std::bitset<N>(std::move(A))
+		{ }
+		extensor(std::bitset<N>&& A)
 			: std::bitset<N>(std::move(A))
 		{ }
 		extensor& operator=(const extensor& A)
 		{
 			return std::bitset::operator=(A);
 		}
-		extensor& operator=(const extensor&& A)
+		extensor& operator=(extensor&& A)
 		{
 			return std::bitset::operator=(std::move(A));
 		}
@@ -42,15 +47,21 @@ namespace grassmann {
 		}
 		bool operator<(const extensor<N>& A) const
 		{
-			std::bitset<N> a(A);
-			a &= ~A;
+			if (count() != A.count())
+				return count() < A.count();
 
-			return operator!=(A) && a == 0;
+			for (size_t i = 0; i < N; ++i)
+				if (operator[](i) != A[i])
+					return A[i];
+
+			return false;
 		}
 	};
 
-	template<size_t N>
+	template<size_t N, class T = double>
 	struct element : public std::map<extensor<N>,T> {
+		typedef typename std::map<extensor<N>,T>::iterator iterator;
+		typedef typename std::map<extensor<N>,T>::value_type value_type;
 		element()
 			: std::map<extensor<N>,T>()
 		{ }
@@ -63,7 +74,7 @@ namespace grassmann {
 			: std::map<extensor<N>,T>(A)
 		{
 		}
-		element(const element<N>&& A)
+		element(element<N>&& A)
 			: std::map<extensor<N>,T>(std::move(A))
 		{
 		}
@@ -84,7 +95,7 @@ namespace grassmann {
 
 			return *this;
 		}
-		element& operator=(const element<N>&& A)
+		element& operator=(element<N>&& A)
 		{
 			if (this != &A) {
 				std::map<extensor<N>,T>::operator=(std::move(A));
@@ -106,7 +117,7 @@ namespace grassmann {
 			auto i = find(A);
 
 			if (i == end())
-				return insert(std::make_pair(A, 0)).first->second;
+				i = insert(std::make_pair(A, 0)).first;
 
 			return i->second;
 		}
@@ -125,32 +136,47 @@ namespace grassmann {
 
 			return *this;
 		}
-		element& operator*=(const extensor<N>& A)
+		element& operator*=(T a)
 		{
-			element<N> B;
-
-			for (auto i = begin(); i != end(); ++i)
-				for (auto j = A.begin(); j != A.end(); ++j) {
-					T s = sign(i->first, j->first);
-					if (s)
-						B[i->first | j->first] = s * i->second * j->second;
-				}
-
-			std::swap(*this, B);
+			std::for_each(begin(), end(), [a](value_type& i) { i.second *= a; });
 
 			return *this;
 		}
-		element& operator*=(const element<N>& A)
+		element& operator*=(const extensor<N>& B)
 		{
-			element<N> B(*this);
+			element<N> A;
 
-			for (auto j = A.begin(); j != A.end(); ++j) {
-				B 
+			for (auto i = begin(); i != end(); ++i) {
+				T s = sign(i->first, B);
+				if (s)
+					A[i->first | B] = s * i->second;
 			}
 
-			std::swap(*this, B);
+			std::swap(*this, A);
 
 			return *this;
+		}
+		element& operator*=(const element<N>& B)
+		{
+			element<N> A;
+
+			for (auto i = begin(); i != end(); ++i)
+				for (auto j = B.begin(); j != B.end(); ++j) {
+					T s = sign(i->first, j->first);
+					if (s)
+						A[i->first | j->first] = s * i->second * j->second;
+				}
+
+			std::swap(*this, A);
+
+			return *this;
+		}
+		T operator/(const element<N>& A) const
+		{
+			if (size() == 1 && A.size() == 1 && begin()->first == A.begin()->first)
+				return begin()->second/A.begin()->second;
+
+			return std::numeric_limits<T>::quiet_NaN();
 		}
 	};
 
@@ -162,8 +188,8 @@ namespace grassmann {
 	};
 } // namespace grassmann
 
-template<size_t N>
-inline T sign(size_t i, const grassmann::extensor<N>& B)
+template<size_t N, class T>
+inline T sign(size_t i, const grassmann::extensor<N,T>& B)
 {
 	if (B[i])
 		return 0;
@@ -176,8 +202,8 @@ inline T sign(size_t i, const grassmann::extensor<N>& B)
 	return s;
 }
 
-template<size_t N>
-inline T sign(const grassmann::extensor<N>& A, const grassmann::extensor<N>& B)
+template<size_t N, class T>
+inline T sign(const grassmann::extensor<N,T>& A, const grassmann::extensor<N,T>& B)
 {
 	T s(1);
 
@@ -191,18 +217,28 @@ inline T sign(const grassmann::extensor<N>& A, const grassmann::extensor<N>& B)
 
 	return s;
 }
-template<size_t N>
-inline grassmann::element<N> operator+(const grassmann::element<N>& A, const grassmann::element<N>& B)
+template<size_t N, class T>
+inline grassmann::element<N,T> operator+(const grassmann::element<N,T>& A, const grassmann::element<N,T>& B)
 {
-	return grassmann::element<N>(A) += B;
+	return grassmann::element<N,T>(A) += B;
 }
-template<size_t N>
-inline grassmann::element<N> operator-(const grassmann::element<N>& A, const grassmann::element<N>& B)
+template<size_t N, class T>
+inline grassmann::element<N,T> operator-(const grassmann::element<N,T>& A, const grassmann::element<N,T>& B)
 {
-	return grassmann::element<N>(A) -= B;
+	return grassmann::element<N,T>(A) -= B;
 }
-template<size_t N>
-inline grassmann::element<N> operator*(const grassmann::element<N>& A, const grassmann::element<N>& B)
+template<size_t N, class T>
+inline grassmann::element<N,T> operator*(const grassmann::element<N,T>& A, const grassmann::element<N,T>& B)
 {
-	return grassmann::element<N>(A) *= B;
+	return grassmann::element<N,T>(A) *= B;
+}
+template<size_t N, class T>
+inline grassmann::element<N,T> operator*(const T& a, const grassmann::element<N,T>& B)
+{
+	return grassmann::element<N,T>(B) *= a;
+}
+template<size_t N, class T>
+inline grassmann::element<N,T> operator*(const grassmann::element<N,T>& A, const T& b)
+{
+	return grassmann::element<N,T>(A) *= b;
 }
