@@ -4,6 +4,7 @@
 #include <iostream>
 #include "functional.h"
 
+using namespace std;
 using namespace functional;
 
 template<class T>
@@ -33,6 +34,60 @@ void test_apply_iterator(void)
 	ensure (*l++ == exp(t[0]));
 	ensure (*l++ == exp(t[1]));
 	ensure (*l++ == exp(t[2]));
+}
+
+template<class T>
+void test_array_iterator(void)
+{
+	T t[] = {1, 2, 3};
+
+	array_iterator<T> i1(t, t + 3);
+	ensure (i1.begin() == t);
+	ensure (i1.end() == t + 3);
+	ensure (*i1 == t[0]);
+	ensure (*++i1 == t[1]);
+	ensure (*i1++ == t[1]);
+	ensure (*i1 == t[2]);
+	*i1 = 4;
+	ensure (*i1 == 4);
+
+	i1 = array_iterator<T>(t, t + 3);
+	array_iterator<T> i2(3, t);
+	ensure (i1 == i2);
+	array_iterator<T> i3(i2);
+	ensure (i3 == i2);
+	++i1;
+	ensure (i1 != i3);
+	i1 = i3;
+	ensure (i1 == i3);
+
+	ensure (!(i1 < i3));
+	ensure (i1 <= i3);
+	ensure (i1 >= i3);
+	ensure (!(i1 > i3));
+	++i3;
+	ensure (i1 < i3);
+
+	i1 += 2;
+	ensure (*i1 == t[2]);
+	i1 = i1 - 1;
+	ensure (*i1 == t[1]);
+}
+
+template<class T>
+void test_basis_spline(void)
+{
+	T t[] = {0,1,2,3,4,5};
+	size_t n = sizeof(t)/sizeof(*t);
+
+	auto f0 = basis_spline<T,T>(0,n,t);
+	ensure (f0(0,-1) == 0);
+	ensure (f0(0,0) == 1);
+	ensure (f0(0,1) == 0);
+
+	ensure (f0(1,0) == 0);
+	ensure (f0(1,1) == 1);
+
 }
 
 template<class T>
@@ -82,6 +137,8 @@ main(void)
 	try {
 		test_apply_iterator<double>();
 		test_apply_iterator<float>();
+		test_array_iterator<double>();
+		test_basis_spline<double>();
 		test_derivative<double>();
 		test_extrapolate();
 		test_integral<double>();

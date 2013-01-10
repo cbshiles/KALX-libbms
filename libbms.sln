@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerical", "numerical\nume
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functional", "functional\functional.vcxproj", "{D9F146AA-60AA-479B-84A6-6A88B732B9D9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grassmann", "grassmann\grassmann.vcxproj", "{3A468A8F-41C9-4F97-99B9-7BCDE959193F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{D9F146AA-60AA-479B-84A6-6A88B732B9D9}.Debug|Win32.Build.0 = Debug|Win32
 		{D9F146AA-60AA-479B-84A6-6A88B732B9D9}.Release|Win32.ActiveCfg = Release|Win32
 		{D9F146AA-60AA-479B-84A6-6A88B732B9D9}.Release|Win32.Build.0 = Release|Win32
+		{3A468A8F-41C9-4F97-99B9-7BCDE959193F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3A468A8F-41C9-4F97-99B9-7BCDE959193F}.Debug|Win32.Build.0 = Debug|Win32
+		{3A468A8F-41C9-4F97-99B9-7BCDE959193F}.Release|Win32.ActiveCfg = Release|Win32
+		{3A468A8F-41C9-4F97-99B9-7BCDE959193F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

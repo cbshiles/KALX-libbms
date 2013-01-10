@@ -6,6 +6,7 @@
 #include <limits>
 #include "../include/ensure.h"
 #include "apply_iterator.h"
+#include "array_iterator.h"
 #include "basis_spline.h"
 #include "polynomial.h"
 

@@ -15,27 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="apply_iterator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="functional.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="constant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="polynomial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="basis_spline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="array_iterator.h">
+    <ClInclude Include="grassmann.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tfunctional.cpp">
+    <ClCompile Include="tgrassmann.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

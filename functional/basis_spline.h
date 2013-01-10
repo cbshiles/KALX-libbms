@@ -11,17 +11,24 @@ namespace functional {
 	
 	// right continuous i-th basis spline of order k having n knot points t
 	template<class T, class U>
-	inline std::function<T(T)> basis_spline(size_t i, size_t k, size_t n, const U* t)
+	inline std::function<T(size_t,T)> basis_spline(size_t k, size_t n, const U* t)
 	{
-		ensure (i + 1 < n);
 
 		if (k == 0) { // order 0
-			return [i,t](T x) { return 1*(t[i] <= x && x < t[i + 1]); };
+			
+			return [n,t](size_t i, T x) -> T { 
+				ensure (i + 1 < n);
+			
+				return 1*(t[i] <= x && x < t[i + 1]); 
+			};
 		}
 
-		return [i,k,n,t](T x) -> T {
-			T b  = basis_spline<T,U>(i, k - 1, n, t)(x);
-			T b_ = basis_spline<T,U>(i + 1, k - 1, n, t)(x);
+		return [k,n,t](size_t i, T x) -> T {
+			ensure (i + k + 1 < n);
+
+			auto B = basis_spline<T,U>(k - 1, n, t);
+			T b  = B(i, x);
+			T b_ = B(i + 1, x);
 			T dt  = static_cast<T>(t[i + k] - t[i]);
 			T dt_ = static_cast<T>(t[i + k + 1] - t[i + 1]);
 
