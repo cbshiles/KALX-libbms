@@ -11,7 +11,7 @@ using namespace std::rel_ops;
 
 namespace grassmann {
 
-	// P_i1 ... P_ik, i1 < ... < ik
+	// P_i P_j ... has bits set at i, j,...
 	template<size_t N, class T = double>
 	struct extensor : public std::bitset<N> {
 		extensor()
@@ -42,10 +42,7 @@ namespace grassmann {
 		}
 		~extensor()
 		{ }
-		bool operator==(const extensor<N>& A) const
-		{
-			return std::bitset<N>::operator==(A);
-		}
+		// strict weak ordering
 		bool operator<(const extensor<N>& A) const
 		{
 			if (std::bitset<N>::count() != A.count())
@@ -56,6 +53,10 @@ namespace grassmann {
 					return A[i];
 
 			return false;
+		}
+		size_t grade(void) const
+		{
+			return std::bitset<N>::count();
 		}
 	};
 
@@ -123,6 +124,24 @@ namespace grassmann {
 
 			return i->second;
 		}
+		T operator[](const element<N>& A) const
+		{
+			ensure (A.size() == 1);
+
+			auto a = A.begin();
+			ensure (a->second == 1);
+
+			return operator[](a->first);
+		}
+		T& operator[](const element<N>& A)
+		{
+			ensure (A.size() == 1);
+
+			auto a = A.begin();
+			ensure (a->second == 1);
+
+			return operator[](a->first);
+		}
 
 		element& operator+=(const element<N>& A)
 		{
@@ -154,7 +173,7 @@ namespace grassmann {
 					A[i->first | B] = s * i->second;
 			}
 
-			std::swap(*this, A);
+			swap(A);
 
 			return *this;
 		}
@@ -162,14 +181,18 @@ namespace grassmann {
 		{
 			element<N> A;
 
-			for (auto i = map::begin(); i != map::end(); ++i)
+			for (auto i = map::begin(); i != map::end(); ++i) {
 				for (auto j = B.begin(); j != B.end(); ++j) {
-					T s = sign(i->first, j->first);
-					if (s)
-						A[i->first | j->first] = s * i->second * j->second;
+					T w = i->second * j->second;
+					if (w) {
+						T s = sign(i->first, j->first);
+						if (s)
+							A[i->first | j->first] += s * w;
+					}
 				}
+			}
 
-			std::swap(*this, A);
+			swap(A);
 
 			return *this;
 		}
@@ -179,6 +202,18 @@ namespace grassmann {
 				return map::begin()->second/A.begin()->second;
 
 			return std::numeric_limits<T>::quiet_NaN();
+		}
+		element operator~() const
+		{
+			element A;
+
+			for (auto i = map::begin(); i != map::end(); ++i) {
+				extensor<N> a(~(i->first));
+
+				A[a] = sign(i->first,a)/i->second;
+			}
+
+			return A;
 		}
 	};
 
@@ -240,7 +275,33 @@ inline grassmann::element<N,T> operator*(const T& a, const grassmann::element<N,
 	return grassmann::element<N,T>(B) *= a;
 }
 template<size_t N, class T>
+inline grassmann::element<N,T> operator*(int a, const grassmann::element<N,T>& B)
+{
+	return grassmann::element<N,T>(B) *= a;
+}
+template<size_t N, class T>
 inline grassmann::element<N,T> operator*(const grassmann::element<N,T>& A, const T& b)
 {
 	return grassmann::element<N,T>(A) *= b;
+}
+template<size_t N, class T>
+inline grassmann::element<N,T> operator*(const grassmann::element<N,T>& A, int b)
+{
+	return grassmann::element<N,T>(A) *= b;
+}
+
+template<size_t N, class T>
+inline grassmann::element<N,T> boundary(const grassmann::extensor<N,T>& A)
+{
+	T s(1);
+	grassmann::element<N,T> B;
+
+	for (size_t i = 0; i < N; ++i) {
+		if (A[i]) {
+			B += s*grassmann::extensor<N,T>(A&~std::bitset<N>(1<<i));
+			s = -s;
+		}
+ 	}
+
+	return B;
 }

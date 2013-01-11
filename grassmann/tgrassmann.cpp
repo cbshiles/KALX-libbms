@@ -22,6 +22,9 @@ void test_extensor(size_t n = 1000)
 	function<size_t()> u(bind(uid, rng));
 
 	extensor<N> P0(1), P1(2), P2(4), P(7);
+	
+	ensure (P0.grade() == 1);
+	ensure (P.grade() == 3);
 
 	ensure (sign(0, P0) == 0);
 	ensure (sign(0, P1) == 1);
@@ -33,6 +36,8 @@ void test_extensor(size_t n = 1000)
 	ensure (sign(P0, P) == 0);
 	ensure (sign(P1, P) == 0);
 	ensure (sign(P2, P) == 0);
+
+	ensure (sign(P0, extensor<N>(6)) == 1);
 
 	// test strict weak ordering
 	for (size_t x = 0; x < n; ++x) {
@@ -84,6 +89,22 @@ void test_convex(void)
 	ensure ((x*X(100)*X(110))/Omega > 0);
 	ensure ((X(90)*x*X(110)) /Omega > 0);
 	ensure ((X(90)*X(100)*x) /Omega > 0);
+
+	ensure (x == ((x*X(100)*X(110))/Omega)*X(90) + ((X(90)*x*X(110))/Omega)*X(100) + ((X(90)*X(100)*x)/Omega)*X(110));
+
+	x += 2.*E(2);
+	ensure ((x*X(100)*X(110))/Omega > 0);
+	ensure ((X(90)*x*X(110)) /Omega < 0);
+	ensure ((X(90)*X(100)*x) /Omega > 0);
+
+	element<3> y = P(0) + P(1) + P(2);
+	element<3> z = ~y;
+	ensure (z.size() == 3);
+	ensure (z[P(1)*P(2)] == 1);
+	ensure (z[P(0)*P(2)] == -1);
+	ensure (z[P(0)*P(1)] == 1);
+
+	ensure (y*(~y) == y.size()*P(0)*P(1)*P(2));
 }
 
 int
