@@ -1,4 +1,5 @@
 // tgrassmann.cpp - test Grassmann algebra
+#include <functional>
 #include <iostream>
 #include <random>
 #include "grassmann.h"
@@ -18,7 +19,7 @@ template<size_t N>
 void test_extensor(size_t n = 1000)
 {
 	std::uniform_int_distribution<size_t> uid(0,-1 + (1<<N));
-	std::variate_generator<default_random_engine,uniform_int_distribution<size_t>> u(rng, uid);
+	function<size_t()> u(bind(uid, rng));
 
 	extensor<N> P0(1), P1(2), P2(4), P(7);
 
@@ -33,6 +34,7 @@ void test_extensor(size_t n = 1000)
 	ensure (sign(P1, P) == 0);
 	ensure (sign(P2, P) == 0);
 
+	// test strict weak ordering
 	for (size_t x = 0; x < n; ++x) {
 		unsigned long long i, j, k;
 		i = u();
@@ -70,17 +72,18 @@ void test_element(void)
 
 #define P(i) point<i,3>()
 #define E(i) (P(i) - P(0))
+
 void test_convex(void)
 {
 	auto X = [](double x) { return P(0) + x*E(1) + (x > 100 ? x - 100 : 0)*E(2); };
 
-	element<3> X90(X(90)), X100(X(100)), X110(X(110));
 	element<3> x = P(0) + 100.*E(1) + 4.*E(2);
-	element<3> Omega(X90*X100*X110);
+	element<3> Omega(X(90)*X(100)*X(110));
 
-	ensure ((x*X100*X110)/Omega > 0);
-	ensure ((X90*x*X110)/Omega > 0);
-	ensure ((X90*X100*x)/Omega > 0);
+	// x is in the convex hull of X(90), X(100), X(110)
+	ensure ((x*X(100)*X(110))/Omega > 0);
+	ensure ((X(90)*x*X(110)) /Omega > 0);
+	ensure ((X(90)*X(100)*x) /Omega > 0);
 }
 
 int

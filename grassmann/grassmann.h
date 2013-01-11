@@ -1,4 +1,5 @@
 // grassmann.h - Grassman algebra
+// Copyright (c) 2013 KALX, LLC. All rights reserved.
 #pragma once
 #include "../include/ensure.h"
 #include <algorithm>
@@ -10,7 +11,7 @@ using namespace std::rel_ops;
 
 namespace grassmann {
 
-	// a P_i1 .. P_ik, i1 < ... < ik
+	// P_i1 ... P_ik, i1 < ... < ik
 	template<size_t N, class T = double>
 	struct extensor : public std::bitset<N> {
 		extensor()
@@ -33,11 +34,11 @@ namespace grassmann {
 		{ }
 		extensor& operator=(const extensor& A)
 		{
-			return std::bitset::operator=(A);
+			return std::bitset<N>::operator=(A);
 		}
 		extensor& operator=(extensor&& A)
 		{
-			return std::bitset::operator=(std::move(A));
+			return std::bitset<N>::operator=(std::move(A));
 		}
 		~extensor()
 		{ }
@@ -47,11 +48,11 @@ namespace grassmann {
 		}
 		bool operator<(const extensor<N>& A) const
 		{
-			if (count() != A.count())
-				return count() < A.count();
+			if (std::bitset<N>::count() != A.count())
+				return std::bitset<N>::count() < A.count();
 
 			for (size_t i = 0; i < N; ++i)
-				if (operator[](i) != A[i])
+				if (std::bitset<N>::operator[](i) != A[i])
 					return A[i];
 
 			return false;
@@ -60,8 +61,9 @@ namespace grassmann {
 
 	template<size_t N, class T = double>
 	struct element : public std::map<extensor<N>,T> {
-		typedef typename std::map<extensor<N>,T>::iterator iterator;
-		typedef typename std::map<extensor<N>,T>::value_type value_type;
+		typedef typename std::map<extensor<N>,T> map;
+		typedef typename map::iterator iterator;
+		typedef typename map::value_type value_type;
 		element()
 			: std::map<extensor<N>,T>()
 		{ }
@@ -81,7 +83,7 @@ namespace grassmann {
 		element& operator=(const extensor<N>& A)
 		{
 			if (this != &A) {
-				clear();
+				map::clear();
 				operator[](A) = 1;
 			}
 
@@ -110,13 +112,13 @@ namespace grassmann {
 		{
 			auto i = find(A);
 
-			return i != end() ? i->second : 0;
+			return i != map::end() ? i->second : 0;
 		}
 		T& operator[](const extensor<N>& A)
 		{
 			auto i = find(A);
 
-			if (i == end())
+			if (i == map::end())
 				i = insert(std::make_pair(A, 0)).first;
 
 			return i->second;
@@ -138,7 +140,7 @@ namespace grassmann {
 		}
 		element& operator*=(T a)
 		{
-			std::for_each(begin(), end(), [a](value_type& i) { i.second *= a; });
+			std::for_each(map::begin(), map::end(), [a](value_type& i) { i.second *= a; });
 
 			return *this;
 		}
@@ -146,7 +148,7 @@ namespace grassmann {
 		{
 			element<N> A;
 
-			for (auto i = begin(); i != end(); ++i) {
+			for (auto i = map::begin(); i != map::end(); ++i) {
 				T s = sign(i->first, B);
 				if (s)
 					A[i->first | B] = s * i->second;
@@ -160,7 +162,7 @@ namespace grassmann {
 		{
 			element<N> A;
 
-			for (auto i = begin(); i != end(); ++i)
+			for (auto i = map::begin(); i != map::end(); ++i)
 				for (auto j = B.begin(); j != B.end(); ++j) {
 					T s = sign(i->first, j->first);
 					if (s)
@@ -173,8 +175,8 @@ namespace grassmann {
 		}
 		T operator/(const element<N>& A) const
 		{
-			if (size() == 1 && A.size() == 1 && begin()->first == A.begin()->first)
-				return begin()->second/A.begin()->second;
+			if (map::size() == 1 && A.size() == 1 && map::begin()->first == A.begin()->first)
+				return map::begin()->second/A.begin()->second;
 
 			return std::numeric_limits<T>::quiet_NaN();
 		}
@@ -183,7 +185,7 @@ namespace grassmann {
 	template<size_t I, size_t N>
 	struct point : public element<N> {
 		point()
-			: element(extensor<N>(1<<I))
+			: element<N>(extensor<N>(1<<I))
 		{ }
 	};
 } // namespace grassmann
