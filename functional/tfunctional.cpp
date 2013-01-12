@@ -88,6 +88,35 @@ void test_basis_spline(void)
 	ensure (f0(1,0) == 0);
 	ensure (f0(1,1) == 1);
 
+	ensure (f0(n-2,4) == 1);
+	ensure (f0(n-2,4.5) == 1);
+	ensure (f0(n-2,5) == 0);
+	ensure (f0(n-2,9) == 0);
+
+	auto f1 = basis_spline<T,T>(1,n,t);
+	for (size_t i = 0; i < n - 2; ++i) {
+		ensure (f1(i,i-1) == 0);
+		ensure (f1(i,i) == 0);
+		ensure (f1(i,i+1) == 1);
+		ensure (f1(i,i+2) == 0);
+		ensure (f1(i,i+3) == 0);
+	}
+
+	auto f2 = basis_spline<T,T>(2,n,t);
+	auto g2 = basis_spline_struct<T,2>(n, t);
+	for (size_t i = 0; i < n - 3; ++i) {
+		for (T x = -1; x < 6; x += 0.1) {
+			ensure (f2(i, x) == g2(i, x));
+		}
+	}
+
+	auto g3 = basis_spline_struct<T,1>(n, t);
+	T y;
+	y = g3.integral<T>(0,0);
+	y = g3.integral<T>(0,0.5);
+	y = g3.integral<T>(0,1);
+	y = g3.integral<T>(0,1.5);
+	y = g3.integral<T>(0,2);
 }
 
 template<class T>
