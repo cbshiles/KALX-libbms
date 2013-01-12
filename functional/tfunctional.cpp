@@ -117,6 +117,8 @@ void test_basis_spline(void)
 	y = g3.integral<T>(0,1);
 	y = g3.integral<T>(0,1.5);
 	y = g3.integral<T>(0,2);
+	y = g3.integral<T>(0,2.5);
+	y = g3.integral<T>(0,3);
 }
 
 template<class T>
