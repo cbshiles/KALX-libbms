@@ -7,6 +7,8 @@
 using namespace std;
 using namespace functional;
 
+#define dimof(x) (sizeof(x)/sizeof(*x))
+
 template<class T>
 void test_apply_iterator(void)
 {
@@ -74,13 +76,24 @@ void test_array_iterator(void)
 	ensure (*i1 == t[1]);
 }
 
+void test_stride_iterator(void)
+{
+	int a[] = {0,1,2,3,4,5,6,7,8,9};
+	array_iterator<int> ai(sizeof(a)/sizeof(*a), a);
+	stride_iterator<array_iterator<int>> si(ai, 2, 1);
+	ensure (*si == 1);
+	++si;
+	ensure (*si == 3);
+	ensure (*++si == 5);
+}
+
 template<class T>
 void test_basis_spline(void)
 {
 	T t[] = {0,1,2,3,4,5};
 	size_t n = sizeof(t)/sizeof(*t);
 
-	auto f0 = basis_spline<T,T>(0,n,t);
+	auto f0 = basis_spline_func<T,T>(0,n,t);
 	ensure (f0(0,-1) == 0);
 	ensure (f0(0,0) == 1);
 	ensure (f0(0,1) == 0);
@@ -93,7 +106,7 @@ void test_basis_spline(void)
 	ensure (f0(n-2,5) == 0);
 	ensure (f0(n-2,9) == 0);
 
-	auto f1 = basis_spline<T,T>(1,n,t);
+	auto f1 = basis_spline_func<T,T>(1,n,t);
 	for (size_t i = 0; i < n - 2; ++i) {
 		ensure (f1(i,i-1) == 0);
 		ensure (f1(i,i) == 0);
@@ -102,7 +115,7 @@ void test_basis_spline(void)
 		ensure (f1(i,i+3) == 0);
 	}
 
-	auto f2 = basis_spline<T,T>(2,n,t);
+	auto f2 = basis_spline_func<T,T>(2,n,t);
 	auto g2 = basis_spline_struct<T,2>(n, t);
 	for (size_t i = 0; i < n - 3; ++i) {
 		for (T x = -1; x < 6; x += 0.1) {
@@ -119,7 +132,20 @@ void test_basis_spline(void)
 	y = g3.integral<T>(0,2);
 	y = g3.integral<T>(0,2.5);
 	y = g3.integral<T>(0,3);
+	
+	y = g3.derivative<T>(0,0);
+	y = g3.derivative<T>(0,0.5);
+	y = g3.derivative<T>(0,1);
+	y = g3.derivative<T>(0,1.5);
+	y = g3.derivative<T>(0,2);
+	y = g3.derivative<T>(0,2.5);
+	y = g3.derivative<T>(0,3);
 
+	T t1[] = {0,0,0,1,1,2};
+	auto g4 = basis_spline_struct<T,3>(dimof(t1), t1);
+	for (T x = 0; x < 2.2; x += 0.1) {
+		y = g4(0,x);
+	}
 }
 
 template<class T>
@@ -163,6 +189,20 @@ void test_polynomial(void)
 	ensure (G(2) == q[0] + two*(q[1] + (two/two)*(q[2] + (two/three)*q[3])));
 }
 
+template<class T, class U>
+void test_piecewise_polynomial(void)
+{
+	U t[] = {0,0,0,1,1,2,3};
+	size_t n = dimof(t);
+	T a[] = {1,1};
+
+	piecewise_polynomial_struct<T,U,dimof(t) - dimof(a) - 1> p(a, basis_spline_struct<U, dimof(t) - dimof(a) - 1>(n, t));
+	T y;
+	for (T x = -0.1; x < 5; x += 0.1) {
+		y = p(x);
+	}
+}
+
 int
 main(void)
 {
@@ -170,6 +210,7 @@ main(void)
 		test_apply_iterator<double>();
 		test_apply_iterator<float>();
 		test_array_iterator<double>();
+		test_stride_iterator();
 		test_basis_spline<double>();
 		test_derivative<double>();
 		test_extrapolate();
@@ -178,6 +219,7 @@ main(void)
 //		test_polynomial<float,float>(); // fails
 		test_polynomial<double,float>();
 //		test_polynomial<float,double>(); // fails
+		test_piecewise_polynomial<double,double>();
 	}
 	catch (const std::exception& ex) {
 		std::cerr << ex.what() << std::endl;
