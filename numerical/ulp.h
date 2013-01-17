@@ -1,11 +1,7 @@
 // ulp.h - units in the last place
 // Copyright (c) 2006-2013 KALX, LLC. All rights reserved. No warranty is made.
 #pragma once
-
-static_assert(sizeof(float) == sizeof(long),
-	"float and long must have the same size");
-static_assert(sizeof(double) == sizeof(long long),
-	"double and long long must have the same size");
+#include <cstdint>
 
 namespace numerical {
 
@@ -14,12 +10,12 @@ struct ulp_traits { };
 
 template<>
 struct ulp_traits<float> {
-	typedef long integer;
+	typedef std::int32_t integer;
 	static const integer x80_ = 0x80000000L;
 };
 template<>
 struct ulp_traits<double> {
-	typedef long long integer;
+	typedef std::int64_t integer;
 	static const integer x80_ = 0x8000000000000000LL;
 };
 
