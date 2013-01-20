@@ -7,13 +7,20 @@ namespace range {
 
 	typedef ptrdiff_t I;
 
+	// cyclic 0-based index in the range [0, n)
+	inline I index(I i, I n)
+	{
+		return (i >= 0) ? i%n : n - 1 - (-i - 1)%n;
+	}
+
 	// wrap pre-allocated memory
 	template<class T>
 	class wrapper {
+	protected:
 		size_t n_;
 		T* t_;
 	public:
-		wrapper(size_t n, T* t)
+		wrapper(size_t n = 0, T* t = nullptr)
 			: n_(n), t_(t)
 		{ }
 		wrapper(const wrapper& a)
@@ -28,7 +35,7 @@ namespace range {
 
 			return *this;
 		}
-	virtual ~wrapper()
+		virtual ~wrapper()
 		{ }
 
 		size_t size(void) const
@@ -70,39 +77,73 @@ namespace range {
 		// cyclic 0-based index
 		T operator[](I i) const
 		{
-			return t_[i >= 0 ? i%n_ : n_ - 1 - (-i - 1)%n_];
+			return t_[index(i,n_)];
 		}
 		T& operator[](I i)
 		{
-			return t_[i >= 0 ? i%n_ : n_ - 1 - (-i - 1)%n_];
+			return t_[index(i,n_)];
 		}
 	};
 
 	// store memory and hook up wrapper
 	template<class T>
-	struct holder : private std::vector<T>, public wrapper<T> {
+	class holder : public wrapper<T> {
+		std::vector<T> u_;
+	public:
 		holder(size_t n)
-			: std::vector<T>(n), wrapper<T>(n, &std::vector<T>::operator[](0))
-		{ }
+			: u_(n)
+		{
+			n_ = u_.size();
+			t_ = &u_[0];
+		}
 		holder(size_t n, const T* t)
-			: std::vector<T>(t, t + n), wrapper<T>(n, &std::vector<T>::operator[](0))
-		{ }
+			: u_(t, t + n)
+		{
+			n_ = u_.size();
+			t_ = &u_[0];
+		}
 		holder(const holder& a)
-			: std::vector<T>(a.begin(), a.end()), wrapper<T>(a.size(), &std::vector<T>::operator[](0))
-		{ }
+			: u_(a.begin(), a.end())
+		{
+			n_ = u_.size();
+			t_ = &u_[0];
+		}
+		holder(holder&& a)
+			: u_(a.begin(), a.end())
+		{
+			n_ = u_.size();
+			t_ = &u_[0];
+			a.n_ = 0;
+			a.t_ = nullptr;
+			a.u_.~vector();
+		}
 		holder& operator=(const holder& a)
 		{
 			if (this != &a) {
-				std::vector<T>::resize(a.size())
-				n_ = a.size();
-				t_ = &std::vector<T>::operator[](0)l
+				u_ = std::vector<T>(a.begin(), a.end());
+				n_ = u_.size();
+				t_ = &u_[0];
+			}
+
+			return *this;
+		}
+		holder& operator=(holder&& a)
+		{
+			if (this != &a) {
+				u_ = std::move(a.u_);
+				n_ = u_.size();
+				t_ = &u_[0];
+				a.n_ = 0;
+				a.t_ = nullptr;
+				a.u_.~vector();
 			}
 
 			return *this;
 		}
 		~holder()
-		{ }
-
+		{
+		}
+/*
 		// override ambiguous members
 		size_t size(void) const
 		{
@@ -124,13 +165,13 @@ namespace range {
 		{
 			return wrapper<T>::end();
 		}
-		T operator[](I i) const
+*/		T operator[](I i) const
 		{
-			return wrapper<T>::operator[](i);
+			return u_[index(i, n_)];
 		}
 		T& operator[](I i)
 		{
-			return wrapper<T>::operator[](i);
+			return u_[index(i, n_)];
 		}
 	};
 
@@ -177,7 +218,7 @@ namespace range {
 	}
 
 	template<class T>
-	inline holder<size_t>&& grade(const wrapper<T>& a, I n = 0)
+	inline holder<size_t> grade(const wrapper<T>& a, I n = 0)
 	{
 		sequence<size_t> b(0, a.size() - 1);
 
@@ -213,6 +254,13 @@ inline void test_range_index(void)
 	ensure (t[3] == _t[0]);
 	ensure (t[-3] == _t[0]);
 	ensure (t[100] == _t[1]);
+
+	s[0] = 4;
+	ensure (s[0] == 4);
+	s[-2] = 5;
+	ensure (s[1] == 5);
+	s[-1-3] = 6;
+	ensure (s[2] == 6);
 }
 
 template<class T>
@@ -278,7 +326,21 @@ inline void test_range_grade(void)
 
 	holder<size_t> i = grade<T>(t);
 	for (T j = 0; j < 4; ++j)
-		ensure (t[i[j]] == j);
+		ensure (t[i[j]] == j + 1);
+
+	i = grade<T>(t, 2);
+	ensure (t[i[0]] == 1);
+	ensure (t[i[1]] == 2);
+
+	i = grade<T>(t, -1);
+	ensure (t[i[0]] == 4);
+	ensure (t[i[1]] == 3);
+	ensure (t[i[2]] == 2);
+	ensure (t[i[3]] == 1);
+
+	i = grade<T>(t, -2);
+	ensure (t[i[0]] == 4);
+	ensure (t[i[1]] == 3);
 }
 
 } // namespace range
