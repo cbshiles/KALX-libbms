@@ -220,6 +220,7 @@ main(void)
 		test_polynomial<double,float>();
 //		test_polynomial<float,double>(); // fails
 		test_piecewise_polynomial<double,double>();
+		test_range();
 	}
 	catch (const std::exception& ex) {
 		std::cerr << ex.what() << std::endl;

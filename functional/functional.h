@@ -9,6 +9,7 @@
 #include "array_iterator.h"
 #include "basis_spline.h"
 #include "polynomial.h"
+#include "range.h"
 
 namespace functional {
 

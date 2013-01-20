@@ -217,12 +217,13 @@ namespace grassmann {
 		}
 	};
 
-	template<size_t I, size_t N>
+	template<size_t N>
 	struct point : public element<N> {
-		point()
-			: element<N>(extensor<N>(1<<I))
+		point(size_t i)
+			: element<N>(extensor<N>(1<<i))
 		{ }
 	};
+
 } // namespace grassmann
 
 template<size_t N, class T>
@@ -291,7 +292,7 @@ inline grassmann::element<N,T> operator*(const grassmann::element<N,T>& A, int b
 }
 
 template<size_t N, class T>
-inline grassmann::element<N,T> boundary(const grassmann::extensor<N,T>& A)
+inline grassmann::element<N-1,T> boundary(const grassmann::extensor<N,T>& A)
 {
 	T s(1);
 	grassmann::element<N,T> B;

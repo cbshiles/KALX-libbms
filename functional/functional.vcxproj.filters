@@ -21,9 +21,6 @@
     <ClInclude Include="functional.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="constant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="polynomial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -31,6 +28,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="array_iterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="range.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
