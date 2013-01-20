@@ -25,8 +25,6 @@ namespace polynomial {
 		};
 	}
 
-} // namespace polynomial
-} // namespace functional
 
 #ifdef _DEBUG
 
@@ -52,7 +50,9 @@ inline void test_functional_polynomial(void)
 	test_functional_polynomial_<double,double>();
 	test_functional_polynomial_<double,float>();
 }
-
-
-
 #endif // _DEBUG
+
+
+} // namespace polynomial
+} // namespace functional
+

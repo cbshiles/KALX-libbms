@@ -148,6 +148,10 @@ namespace functional {
 		typename std::iterator_traits<I>::difference_type,
 		typename std::iterator_traits<I>::pointer,
 		typename std::iterator_traits<I>::reference> {
+
+		typedef typename std::iterator_traits<I>::value_type value_type;
+		typedef typename std::iterator_traits<I>::reference reference;
+		typedef typename std::iterator_traits<I>::difference_type difference_type;
 	protected:
 		I b_, e_, i_;
 	public:
@@ -289,6 +293,10 @@ namespace functional {
 		typename std::iterator_traits<I>::difference_type,
 		typename std::iterator_traits<I>::pointer,
 		typename std::iterator_traits<I>::reference> {
+
+		typedef typename std::iterator_traits<I>::value_type value_type;
+		typedef typename std::iterator_traits<I>::difference_type difference_type;
+		typedef typename std::iterator_traits<I>::reference reference;
 	protected:
 		I i_;
 		difference_type stride_;
@@ -308,7 +316,7 @@ namespace functional {
 		{
 			I i(i_);
 
-			std::advance(i, n*stride_)
+			std::advance(i, n*stride_);
 
 			return *i_;
 		}
@@ -316,7 +324,7 @@ namespace functional {
 		{
 			I i(i_);
 
-			std::advance(i, n*stride_)
+			std::advance(i, n*stride_);
 
 			return *i_;
 		}

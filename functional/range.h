@@ -3,6 +3,8 @@
 #pragma once
 #include <vector>
 
+#define nullptr 0
+
 namespace range {
 
 	typedef ptrdiff_t I;
@@ -85,9 +87,85 @@ namespace range {
 		}
 	};
 
+	// 2-dimensional range
+	template<class T>
+	class wrapper2 : private wrapper<T> {
+		using wrapper<T>::n_;
+		using wrapper<T>::t_;
+		size_t n1_, n2_;
+	public:
+		wrapper2(size_t n1 = 0, size_t n2 = 0, T* t = nullptr)
+			: wrapper<T>(n1*n2, t), n1_(n1), n2_(n2)
+		{ }
+		wrapper2(size_t n1, const wrapper<T>& a)
+			: wrapper<T>(a), n1_(n1), n2_(n_/n1_)
+		{
+			ensure (n1_*n2_ == n_);
+		}
+		wrapper2(const wrapper2<T>& a)
+			: wrapper<T>(a.n_, a.t_), n1_(a.n1_), n2_(a.n2_)
+		{ }
+		wrapper2& operator=(const wrapper2<T>& a)
+		{
+			if (this != &a) {
+				n_ = a.n_;
+				t_ = a.t_;
+				n1_ = a.n1_;
+				n2_ = a.n2_;
+			}
+
+			return *this;
+		}
+		~wrapper2()
+		{ }
+		operator T*()
+		{
+			return t_;
+		}
+		T* begin(void)
+		{
+			return t_;
+		}
+		const T* begin(void) const
+		{
+			return t_;
+		}
+		T* end(void)
+		{
+			return t_ + n_;
+		}
+		const T* end(void) const
+		{
+			return t_ + n_;
+		}
+		size_t size(void) const
+		{
+			return n_;
+		}
+
+		size_t rows(void) const
+		{
+			return n1_;
+		}
+		size_t columns(void) const
+		{
+			return n2_;
+		}
+		bool operator==(const wrapper2<T> a) const
+		{
+			return n1_ == a.n1_ && n2_ == a.n2_ && wrapper<T>::operator==(wrapper<T>(n_, t_));
+		}
+		wrapper<T> operator[](I i) const
+		{
+			return wrapper<T>(n2_, t_ + index(i,n_)*n2_);
+		}
+	};
+
 	// store memory and hook up wrapper
 	template<class T>
 	class holder : public wrapper<T> {
+		using wrapper<T>::n_;
+		using wrapper<T>::t_;
 		std::vector<T> u_;
 	public:
 		holder(size_t n)
@@ -143,29 +221,7 @@ namespace range {
 		~holder()
 		{
 		}
-/*
-		// override ambiguous members
-		size_t size(void) const
-		{
-			return wrapper<T>::size();
-		}
-		T* begin(void)
-		{
-			return wrapper<T>::begin();
-		}
-		const T* begin(void) const
-		{
-			return wrapper<T>::begin();
-		}
-		T* end(void)
-		{
-			return wrapper<T>::end();
-		}
-		const T* end(void) const
-		{
-			return wrapper<T>::end();
-		}
-*/		T operator[](I i) const
+		T operator[](I i) const
 		{
 			return u_[index(i, n_)];
 		}
@@ -182,15 +238,23 @@ namespace range {
 		sequence(I start, I stop, I step = 1)
 			: holder<T>(1 + (stop - start)/step)
 		{
-			for (size_t i = 0; i < size(); ++i)
-				operator[](i) = start + i*step;
+			for (size_t i = 0; i < holder<T>::size(); ++i)
+				holder<T>::operator[](i) = start + i*step;
 		}
 	};
 
 	template<class T>
 	inline wrapper<T> take(I n, wrapper<T>& a)
 	{
+		ensure (n <= static_cast<I>(a.size()));
+		ensure (-n <= static_cast<I>(a.size()));
+
 		return n >= 0 ? wrapper<T>(n, a) : wrapper<T>(-n, a + a.size() + n);
+	}
+	template<class T>
+	inline wrapper2<T> take(I n, wrapper2<T>& a)
+	{
+		return n >= 0 ? wrapper2<T>(n, wrapper<T>(n*a.columns(), a)) : wrapper2<T>(-n*a.columns(), a + a.size() + n*a.columns());
 	}
 
 	template<class T>
@@ -343,6 +407,29 @@ inline void test_range_grade(void)
 	ensure (t[i[1]] == 3);
 }
 
+template<class T>
+inline void test_range_wrapper2(void)
+{
+	T _t[] = {1, 2, 3,
+	        4, 5, 6};
+	wrapper2<T> a(2, 3, _t);
+	wrapper2<T> a2(a), a3;
+	a3 = a;
+
+	ensure (a[0][0] == 1);
+	ensure (a[1][2] == 6);
+
+	a[1][2] = 7;
+	ensure (a[1][2] == 7);
+
+	ensure (a[0] == wrapper<T>(3, _t));
+	ensure (a[1] == wrapper<T>(3, _t + 3));
+
+	wrapper2<T> b(2, wrapper<T>(6, _t));
+	ensure (b[0] == wrapper<T>(3, _t));
+	ensure (b[1] == wrapper<T>(3, _t + 3));
+}
+
 } // namespace range
 
 inline void test_range(void)
@@ -353,6 +440,7 @@ inline void test_range(void)
 	range::test_range_stride<size_t>();
 	range::test_range_mask<long>();
 	range::test_range_grade<int>();
+	range::test_range_wrapper2<int>();
 }
 
 #endif
