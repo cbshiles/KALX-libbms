@@ -1,19 +1,5 @@
 // range.h - multi-dimensional range functions
 // Copyright (c) 2013 KALX, LLC. All rights reserved.
-// rank {n0, n1, ...}
-// data T*, or const T* is n0 x n1 x ...
-/*
-index(r)(i);
-stride(r)(s)(i)
-take(r)(t)(i)
-
-data[i]
-data[stride(s,o)(i)]
-data[take(n)(i)]
-data[drop(n)(i)]
-data[mask(m)(i)]
-
-*/
 #pragma once
 #include <vector>
 
@@ -42,8 +28,9 @@ namespace range {
 
 			return *this;
 		}
-		virtual ~wrapper()
+	virtual ~wrapper()
 		{ }
+
 		size_t size(void) const
 		{
 			return n_;
@@ -68,11 +55,11 @@ namespace range {
 		{
 			return t_ + n_;
 		}
-		bool operator==(const wrapper<T>& u)
+		bool operator==(const wrapper<T>& u) const
 		{
 			return (n_ == u.size() && begin() == u.begin()) || std::equal(begin(), end(), u.begin());
 		}
-		bool operator<(const wrapper<T>& u)
+		bool operator<(const wrapper<T>& u) const
 		{
 			return std::lexicographical_compare(begin(), end(), u.begin(), u.end());
 		}
@@ -100,6 +87,23 @@ namespace range {
 		holder(size_t n, const T* t)
 			: std::vector<T>(t, t + n), wrapper<T>(n, &std::vector<T>::operator[](0))
 		{ }
+		holder(const holder& a)
+			: std::vector<T>(a.begin(), a.end()), wrapper<T>(a.size(), &std::vector<T>::operator[](0))
+		{ }
+		holder& operator=(const holder& a)
+		{
+			if (this != &a) {
+				std::vector<T>::resize(a.size())
+				n_ = a.size();
+				t_ = &std::vector<T>::operator[](0)l
+			}
+
+			return *this;
+		}
+		~holder()
+		{ }
+
+		// override ambiguous members
 		size_t size(void) const
 		{
 			return wrapper<T>::size();
@@ -133,6 +137,7 @@ namespace range {
 	template<class T>
 	class sequence : public holder<T> {
 	public:
+		// start, start + step, ..., stop inclusive
 		sequence(I start, I stop, I step = 1)
 			: holder<T>(1 + (stop - start)/step)
 		{
@@ -172,7 +177,7 @@ namespace range {
 	}
 
 	template<class T>
-	inline wrapper<size_t>&& grade(const wrapper<T>& a, I n = 0)
+	inline holder<size_t>&& grade(const wrapper<T>& a, I n = 0)
 	{
 		sequence<size_t> b(0, a.size() - 1);
 
@@ -191,6 +196,8 @@ namespace range {
 	}
 
 #ifdef _DEBUG
+
+#include "../include/ensure.h"
 
 template<class T>
 inline void test_range_index(void)
@@ -269,7 +276,7 @@ inline void test_range_grade(void)
 	T _t[] = {3,1,4,2};
 	wrapper<T> t(4, _t);
 
-	wrapper<size_t> i = grade<T>(t);
+	holder<size_t> i = grade<T>(t);
 	for (T j = 0; j < 4; ++j)
 		ensure (t[i[j]] == j);
 }
