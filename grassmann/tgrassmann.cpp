@@ -66,16 +66,16 @@ void test_element(void)
 	A *= 3;
 	ensure (A[extensor<N>(1)] == 6);
 
-	point<0,N> P0;
+	point<N> P0(0);
 	ensure (P0.size() == 1);
 	ensure (P0[extensor<N>(1)] == 1);
 	ensure (P0[extensor<N>(2)] == 0);
 
-	A += point<1,N>()*point<2,N>();
+	A += point<N>(1)*point<N>(2);
 	ensure (A.size() == 2);
 }
 
-#define P(i) point<i,3>()
+#define P(i) point<3>(i)
 #define E(i) (P(i) - P(0))
 
 void test_convex(void)
@@ -105,6 +105,27 @@ void test_convex(void)
 	ensure (z[P(0)*P(1)] == 1);
 
 	ensure (y*(~y) == y.size()*P(0)*P(1)*P(2));
+}
+
+// X(w) = (R, (w - k1)+, ...), L < w < H
+void test_arb_finder(double lo, double hi)
+{
+	double k[] = { 80, 90, 100, 110, 120 };
+	double c[] = {  1,  2,   3,   4,   5 };
+	size_t n = sizeof(k)/sizeof(*k);
+	element<sizeof(k)/sizeof(*k) + 3> P[7];
+		
+	P[0] = point<sizeof(k)/sizeof(*k) + 3>(0);
+	P[1] = P[0] + lo*(point<sizeof(k)/sizeof(*k) + 3>(1) - P[0]);
+/*	for (size_t i = 0; i < sizeof(k)/sizeof(*k); ++i) {
+		P[i + 2] = P[0];
+		for (size_t j = 0; j <= i; ++j)
+			P[i + 2] += (std::max)(k[j] - k[i], 0)*P[i + 2 + j];
+	P[2] = P[0] + hi*(point<sizeof(k)/sizeof(*k) + 3>(1) - P[0]);
+
+	auto X = [n,k](double w) {
+	};
+*/
 }
 
 int

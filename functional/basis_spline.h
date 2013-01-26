@@ -232,7 +232,7 @@ namespace functional {
 				return 0;
 
 			size_t i0 = lb - t;
-			for (size_t i = i0; i < i0 + k + 1 && i < B_.size() - K - 1; ++i)
+			for (size_t i = i0; i < i0 + K + 1 && i < B_.size() - K - 1; ++i)
 				p += a_[i]*B_.derivative(i, x);
 
 			return p;
@@ -249,7 +249,7 @@ namespace functional {
 				return 0;
 
 			size_t i0 = lb - t;
-			for (size_t i = i0; i < i0 + k + 2 && i < n_ - K - 1; ++i)
+			for (size_t i = i0; i < i0 + K + 2 && i < n - K - 1; ++i)
 				p += a_[i]*B_.integral(i, x);
 
 			return p;

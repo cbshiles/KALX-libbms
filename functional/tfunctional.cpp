@@ -198,8 +198,9 @@ main(void)
 		test_derivative<double>();
 		test_extrapolate();
 		test_integral<double>();
-		test_functional_polynomial();
+//		test_functional_polynomial();
 		test_piecewise_polynomial<double,double>();
+		test_range();
 	}
 	catch (const std::exception& ex) {
 		std::cerr << ex.what() << std::endl;
