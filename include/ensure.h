@@ -1,5 +1,5 @@
-// ensure.h - works like assert, but throws an exception in release mode, and sets a break point in debug mode
-// Copyright (c) 2006 KALX, LLC. All rights reserved. No warranty is made.
+// ensure.h - throw an exception in release mode, break in debug mode
+// Copyright (c) 2006-2013 KALX, LLC. All rights reserved. No warranty is made.
 //
 // #define ensure(x)
 // or
@@ -31,7 +31,8 @@
 		#define ensure(e) if (!(e)) { __builtin_trap(); }
 	#endif
 #else // release
-	#define ensure(e) if (!(e)) {throw std::runtime_error(ENSURE_SPOT "\nensure: \"" #e "\" failed");}
+	#define ensure(e) if (!(e)) { \
+		throw std::runtime_error(ENSURE_SPOT "\nensure: \"" #e "\" failed");}
 #endif
 
 #endif // ensure
