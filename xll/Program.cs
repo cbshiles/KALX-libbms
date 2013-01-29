@@ -11,10 +11,19 @@ using System.Xml;
 
 namespace xll
 {
+    // C# to Excel and C types
     public enum toc_type { XLL_NAME, C_NAME };
 
     class Program
     {
+        // translate C# types to Excel and C types
+        static Dictionary<Type, string[]> toc = new Dictionary<Type, string[]> {
+            {typeof(System.Boolean), new string[] {"XLL_BOOLX", "BOOL"}},
+            {typeof(System.Double), new string[] {"XLL_DOUBLEX", "double"}},
+            {typeof(System.Double[]), new string[] {"XLL_FPX", "_FP*"}},
+            {typeof(System.UInt32), new string[] {"XLL_WORDX", "size_t"}}
+        };
+
         static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
         static string h_pre = "// {0}.h - {1}\n" +
             "// " + copyright + "\n" +
@@ -32,7 +41,7 @@ namespace xll
             "\t.Category(_T(\"{4}\"))\n" +
             "\t.FunctionHelp(_T(\"{5}\"))\n" +
             "\t.Documentation(_T(\"{6}\"))\n" +
-            ");\n";
+            ");";
         static string c_impl = "{0}\n"+
             "{{\n" +
             "#pragma XLLEXPORT\n" +
@@ -45,14 +54,6 @@ namespace xll
             "\t}}\n\n" +
             "\treturn result;\n" +
             "}}\n";
-
-        // translate C# type to Excel and C types
-        static Dictionary<Type, string[]> toc = new Dictionary<Type, string[]> {
-            {typeof(System.Boolean), new string[] {"XLL_BOOLX", "BOOL"}},
-            {typeof(System.Double), new string[] {"XLL_DOUBLEX", "double"}},
-            {typeof(System.Double[]), new string[] {"XLL_FPX", "_FP*"}},
-            {typeof(System.UInt32), new string[] {"XLL_WORDX", "size_t"}}
-        };
 
         static string c_name(string ac, string m)
         {
@@ -73,10 +74,9 @@ namespace xll
                 string assembly = xll_xml.Element("doc").Element("assembly").Value;
                 XElement members = xll_xml.Element("doc").Element("members");
 
-                var T = from m in members.Elements("member")
+                foreach (var t in from m in members.Elements("member")
                             where m.Attribute("name").Value.StartsWith("T:")
-                            select m;
-                foreach (var t in T)
+                            select m)
                 {
                     string name = t.Attribute("name").Value; // M:ns.cl
                     string summary = t.Element("summary").Value;
@@ -121,20 +121,29 @@ namespace xll
                             toc[rt][(int)toc_type.XLL_NAME], xll_name(ac, method),
                             Args, category, m.Element("summary").Value, m.Element("remarks").Value);
 
-                        string result = "";
-                        XElement Result = m.Element("result");
-                        if (Result != null)
-                            result = "result = " + Result.Value + ";";
-                        xll_c.WriteLine(c_impl, decl, toc[rt][(int)toc_type.C_NAME], result);
+                        string body = "<body>";
+                        
+                        XElement Body = m.Element("body");
+                        if (Body != null)
+                            body = Body.Value;
+
+                        if (Body == null)
+                        {
+                            XElement Result = m.Element("result");
+                            if (Result != null)
+                                body = "result = " + Result.Value + ";";
+                        }
+                        
+                        xll_c.WriteLine(c_impl, decl, toc[rt][(int)toc_type.C_NAME], body);
                     }
 
                     xll_c.Close();
                     xll_h.Close();
                 }
-
             }
         }
 
+        // return_type name(arg_type arg,...)
         static string Decl(MethodInfo mi, string ac, string method)
         {
             string args = "";
@@ -154,53 +163,34 @@ namespace xll
 
             return String.Format(c_decl, c_name(ac, method), result, args);
         }
-        /*
-                static void WriteXllFiles(string file)
+
+        // name(arg,...)
+        static string Call(MethodInfo mi, string ac, string method)
+        {
+            string call = c_name(ac, method) + "(";
+
+            ParameterInfo[] pi = mi.GetParameters();
+            for (int i = 0; i < pi.Length; ++i)
+            {
+                if (i > 0)
                 {
-                    Assembly dll = Assembly.LoadFrom(String.Concat(file, @".dll"));
-            
-                    string assembly = xll.Element(@"doc").Element(@"assembly").Value;
-                    XElement members = xll.Element(@"doc").Element(@"members");
-
-
-                    xll_h.WriteLine(h_pre, file);
-                    xll_cpp.WriteLine(c_pre, file);
-
-                    foreach (XElement m in members.Nodes())
-                    {
-                        string name = m.Attribute("name").Value; // M:Assembly.Class.Method(Args)
-                        string method = name.Substring(2, name.IndexOf('(') - 2); // Assembly.Class.Method
-
-
-                        string type = method.Substring(0, method.LastIndexOf('.')); // Assemply.Class
-                        string method_name = method.Substring(method.LastIndexOf('.') + 1); // Method
- 
-                        Type gt = dll.GetType(type);
-                        MethodInfo mi = gt.GetMethod(method_name);
-
-                        int i = 0;
-                        ParameterInfo[] pi = mi.GetParameters();
-                        string args = "";
-                        foreach (var p in m.Elements("param")) 
-                        {
-                            if (i > 0)
-                            {
-                                args += ", "; 
-                            }
-                            args += toc[pi[i].GetType()][(int)toc_type.C_NAME];
-                            args += " ";
-                            args += p.Attribute("name").Value;
-                            ++i;
-                        }
-
-                        xll_h.Write(c_decl + ";", toc[mi.ReturnType], method_name, args);
-                    }
-
-                    xll_h.Close();
-                    xll_cpp.Close();
+                    call += ", ";
                 }
 
-             }
-         */
+                // FP data type
+                if (pi[i].ParameterType.IsArray && pi[i].ParameterType.UnderlyingSystemType == typeof(System.Double))
+                {
+                    call += "size(*" + pi[i].Name + "), " + pi[i].Name + "->array";
+                }
+                else
+                {
+                    call += pi[i].Name;
+                }
+            }
+
+            call += ")";
+
+            return call;
+        }
     }
 }
