@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <curves>
+  <summary name="curves">
+    Functions involving curves including 
+    polynomials, basis splines, and piecewise polynomial functions.
+  </summary>
   <basis_spline>
     <remarks name="value">
       Order 0 is piecewise constant, order 1 is piecewise linear, etc.

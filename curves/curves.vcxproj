@@ -73,11 +73,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="basis_spline.cpp" />
+    <ClCompile Include="curves.cpp" />
     <ClCompile Include="piecewise_polynomial.cpp" />
     <ClCompile Include="polynomial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="curves.xml" />
+    <None Include="curves.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basis_spline.h" />

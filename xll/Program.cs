@@ -25,16 +25,17 @@ namespace xll
         };
 
         static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
-        static string h_pre = "// {0}.h - {1}\n" +
+        static string h_pre = "// {0}.h - top level header\n" +
             "// " + copyright + "\n" +
             "// Uncomment the line below to compile for Excel 2007 and later.\n" +
             "//#define EXCEL12\n" +
             "#pragma once\n" +
-            "#include \"../{2}/{3}.h\"\n" +
-            "#include \"xll/xll.h\"\n";
-        static string c_pre = "// {0}.cpp - see {0}.h\n" +
+            "#include \"xll/xll.h\"\n"+
+            "\n#define CATEGORY _T(\"{0}\")\n";
+        static string c_pre = "// {0}.cpp\n" +
             "// " + copyright + "\n" +
-            "#include \"{0}.h\"\n"+
+            "#include \"../{1}.h\"\n" +
+            "#include \"{2}\"\n" +
             "\nusing namespace xll;\n";
         static string c_decl = "{1} WINAPI xll_{0}({2})";
         static string addin_decl = "static AddInX xai_{0}(\n" +
@@ -57,9 +58,12 @@ namespace xll
             "\treturn result;\n" +
             "}}\n";
         static string top_level = "// {0}.cpp - top level documentation\n" +
-            "#include xll/xll.h\n" +
+            "#include \"{0}.h\"\n" +
             "\nusing namespace xll;\n" +
-            "\nstatic AddInX xai_{0}_document(DocumentX({0}).Documentation({1}));\n";
+            "\nstatic AddInX xai_{0}_document(\n"+
+            "\tDocumentX(_T(CATEGORY)\n"+
+            "\t.Documentation(_T(\"{1}\"))\n"+
+            ");\n";
 
         static string c_name(string ac, string m)
         {
@@ -74,27 +78,60 @@ namespace xll
         {
             foreach (string file in args)
             {
+                string xll_dir = "../" + file + "/" + file + "_xll/";
                 Assembly xll_dll = Assembly.LoadFrom(String.Concat(file, @".dll"));
                 XDocument xll_xml = XDocument.Load(String.Concat(file, @".xml"), LoadOptions.None);
 
                 string assembly = xll_xml.Element("doc").Element("assembly").Value;
                 XElement members = xll_xml.Element("doc").Element("members");
 
+                string top_header = null;
+                // create top level header
                 foreach (var t in from m in members.Elements("member")
-                            where m.Attribute("name").Value.StartsWith("T:")
-                            select m)
+                                  where m.Attribute("name").Value.StartsWith("T:")
+                                  select m)
                 {
-                    string name = t.Attribute("name").Value; // M:ns.cl
+                    string name = t.Attribute("name").Value; // M:namespace.class
                     string summary = t.Element("summary").Value;
                     name = name.Substring(2);
                     string ns = name.Substring(0, name.IndexOf('.'));
                     string cl = name.Substring(name.IndexOf('.') + 1);
 
-                    StreamWriter xll_h = new StreamWriter(String.Concat(cl, @".h"));
-                    StreamWriter xll_c = new StreamWriter(String.Concat(cl, @".cpp"));
+                    if (ns == cl)
+                    {
+                        top_header = cl + ".h";
+                        StreamWriter xll_h = new StreamWriter(String.Concat(xll_dir, top_header));
+                        xll_h.Write(h_pre, cl);
+                        xll_h.Close();
 
-                    xll_h.WriteLine(h_pre, cl, summary.Replace("\n", "\n// "), file, cl.ToLower());
-                    xll_c.WriteLine(c_pre, cl);
+                        StreamWriter xll_cpp = new StreamWriter(String.Concat(xll_dir, cl + ".cpp"));
+                        xll_cpp.Write(top_level, cl, summary.Trim().Replace("\n", "\")\n\t_T(\""));
+                        xll_cpp.Close();
+
+                        break;
+                    }
+                }
+
+                Debug.Assert(top_header != null);
+
+                foreach (var t in from m in members.Elements("member")
+                            where m.Attribute("name").Value.StartsWith("T:")
+                            select m)
+                {
+                    string name = t.Attribute("name").Value; // M:namespace.class
+                    string summary = t.Element("summary").Value;
+                    name = name.Substring(2);
+                    string ns = name.Substring(0, name.IndexOf('.'));
+                    string cl = name.Substring(name.IndexOf('.') + 1);
+
+                    if (ns == cl)
+                    {
+                        continue; // skip top level
+                    }
+
+                    StreamWriter xll_c = new StreamWriter(String.Concat(xll_dir, cl, @".cpp"));
+
+                    xll_c.WriteLine(c_pre, cl, cl.ToLower(), top_header);
 
                     foreach (var m in from m in members.Elements("member")
                                       where m.Attribute("name").Value.StartsWith("M:" + name)
@@ -108,7 +145,6 @@ namespace xll
 
                         MethodInfo mi = xll_dll.GetType(ac).GetMethod(method);
                         string decl = Decl(mi, ac, method);
-                        xll_h.WriteLine(decl + ";");
 
                         Type rt = mi.ReturnType.UnderlyingSystemType;
                         var param = m.Elements("param").ToArray();
@@ -144,12 +180,6 @@ namespace xll
                     }
 
                     xll_c.Close();
-                    xll_h.Close();
-
-                    // top level documentation
-                    StreamWriter xll_doc = new StreamWriter(String.Concat(cl, @".cpp"));
-                    xll_doc.WriteLine(top_level, cl, "foo");
-                    xll_doc.Close();
                 }
             }
         }
