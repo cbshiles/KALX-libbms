@@ -30,10 +30,12 @@ namespace xll
             "// Uncomment the line below to compile for Excel 2007 and later.\n" +
             "//#define EXCEL12\n" +
             "#pragma once\n" +
+            "#include \"../{2}/{3}.h\"\n" +
             "#include \"xll/xll.h\"\n";
         static string c_pre = "// {0}.cpp - see {0}.h\n" +
             "// " + copyright + "\n" +
-            "#include \"{0}.h\"\n";
+            "#include \"{0}.h\"\n"+
+            "\nusing namespace xll;\n";
         static string c_decl = "{1} WINAPI xll_{0}({2})";
         static string addin_decl = "static AddInX xai_{0}(\n" +
             "\tFunctionX({1}, _T(\"?xll_{0}\"), _T(\"{2}\"))\n" +
@@ -54,6 +56,10 @@ namespace xll
             "\t}}\n\n" +
             "\treturn result;\n" +
             "}}\n";
+        static string top_level = "// {0}.cpp - top level documentation\n" +
+            "#include xll/xll.h\n" +
+            "\nusing namespace xll;\n" +
+            "\nstatic AddInX xai_{0}_document(DocumentX({0}).Documentation({1}));\n";
 
         static string c_name(string ac, string m)
         {
@@ -87,7 +93,7 @@ namespace xll
                     StreamWriter xll_h = new StreamWriter(String.Concat(cl, @".h"));
                     StreamWriter xll_c = new StreamWriter(String.Concat(cl, @".cpp"));
 
-                    xll_h.WriteLine(h_pre, cl, summary);
+                    xll_h.WriteLine(h_pre, cl, summary.Replace("\n", "\n// "), file, cl.ToLower());
                     xll_c.WriteLine(c_pre, cl);
 
                     foreach (var m in from m in members.Elements("member")
@@ -119,7 +125,7 @@ namespace xll
                         }
                         xll_c.WriteLine(addin_decl, c_name(ac, method), 
                             toc[rt][(int)toc_type.XLL_NAME], xll_name(ac, method),
-                            Args, category, m.Element("summary").Value, m.Element("remarks").Value);
+                            Args, category, m.Element("summary").Value.Trim(), m.Element("remarks").Value.Trim().Replace("\n", "\")\n\t_T(\""));
 
                         string body = "<body>";
                         
@@ -139,6 +145,11 @@ namespace xll
 
                     xll_c.Close();
                     xll_h.Close();
+
+                    // top level documentation
+                    StreamWriter xll_doc = new StreamWriter(String.Concat(cl, @".cpp"));
+                    xll_doc.WriteLine(top_level, cl, "foo");
+                    xll_doc.Close();
                 }
             }
         }
