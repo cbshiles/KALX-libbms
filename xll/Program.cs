@@ -61,7 +61,7 @@ namespace xll
             "#include \"{0}.h\"\n" +
             "\nusing namespace xll;\n" +
             "\nstatic AddInX xai_{0}_document(\n"+
-            "\tDocumentX(_T(CATEGORY)\n"+
+            "\tDocumentX(CATEGORY)\n"+
             "\t.Documentation(_T(\"{1}\"))\n"+
             ");\n";
 

@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D9E73759-DF05-45C1-B0FE-EC72CC6A1EFC}</ProjectGuid>
+    <ProjectGuid>{DE50B4AA-15DF-47EF-B827-38F1C4AB134B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>curves_test</RootNamespace>
+    <RootNamespace>numerical_test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -74,10 +74,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="basis_spline_test.cpp" />
-    <ClCompile Include="bootstrap_test.cpp" />
-    <ClCompile Include="curves_test.cpp" />
-    <ClCompile Include="polynomial_test.cpp" />
+    <ClCompile Include="newton_test.cpp" />
+    <ClCompile Include="numerical_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

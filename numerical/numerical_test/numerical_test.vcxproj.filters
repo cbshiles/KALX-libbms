@@ -15,16 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="curves_test.cpp">
+    <ClCompile Include="numerical_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="polynomial_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="basis_spline_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bootstrap_test.cpp">
+    <ClCompile Include="newton_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

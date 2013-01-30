@@ -41,6 +41,9 @@
     <ClInclude Include="piecewise_polynomial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bootstrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="curves.xml">

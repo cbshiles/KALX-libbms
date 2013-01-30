@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basis_spline.h" />
+    <ClInclude Include="bootstrap.h" />
     <ClInclude Include="piecewise_polynomial.h" />
     <ClInclude Include="polynomial.h" />
   </ItemGroup>
