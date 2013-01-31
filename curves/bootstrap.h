@@ -38,10 +38,12 @@ namespace pwflat {
 		{
 			return n_;
 		}
+		// forward at back
 		F back(void) const
 		{
 			return n_ ? f_[n_ - 1] : _f_;
 		}
+		// last time
 		T last(void) const
 		{
 			return n_ ? t_[n_ - 1] : 0;
@@ -102,6 +104,7 @@ namespace pwflat {
 
 			return pv;
 		}
+		// parallel shift past u0
 		F duration(size_t m, const T* u, const T* c, T u0 = 0)
 		{
 			T dur(0);
@@ -157,21 +160,14 @@ namespace pwflat {
 			if (m == 2 && p == 0) {
 				return bootstrap2(u[0], c[0], u[1], c[1]);
 			}
-		
-			T t0 = last();
-			const T* um = std::upper_bound(u, u + m, t0);
-			F p0 = present_value(um - u, u, c);
 
-			m -= um - u;
-			c += um - u;
-			u += um - u;
-
-			auto pv = [this,p,p0,m,u,c](F _f) -> F
+			auto pv = [this,p,m,u,c](F _f) -> F
 			{ 
 				this->extrapolate(_f);
 
-				return -p + p0 + present_value(m, u, c); 
+				return present_value(m, u, c) - p; 
 			};
+			T t0 = last();
 			auto dur = [this,t0,m,u,c](F _f) -> F
 			{ 
 				this->extrapolate(_f);
@@ -179,10 +175,7 @@ namespace pwflat {
 				return duration(m, u, c, t0);
 			};
 
-			if (!_f_)
-				extrapolate(back());
-
-			return numerical::root1d::newton(extrapolate(), pv, dur);
+			return numerical::root1d::newton(_f_ ? _f_ : back(), pv, dur);
 		}
 	};
 

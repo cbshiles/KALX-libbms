@@ -78,6 +78,7 @@
     <ClCompile Include="bootstrap_test.cpp" />
     <ClCompile Include="curves_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
+    <ClCompile Include="yield_curve_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

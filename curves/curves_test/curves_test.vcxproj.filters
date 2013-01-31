@@ -27,5 +27,8 @@
     <ClCompile Include="bootstrap_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="yield_curve_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

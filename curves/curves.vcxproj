@@ -87,6 +87,7 @@
     <ClInclude Include="bootstrap.h" />
     <ClInclude Include="piecewise_polynomial.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="yield_curve.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
