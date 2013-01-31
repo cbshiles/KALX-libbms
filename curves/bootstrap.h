@@ -71,6 +71,10 @@ namespace pwflat {
 		{
 			return value(u);
 		}
+		F operator[](size_t i) const
+		{
+			return f_[i];
+		}
 		F integral(T t) const
 		{
 			F I(0);
