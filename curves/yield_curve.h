@@ -5,6 +5,32 @@
 #include "bootstrap.h"
 
 namespace curves {
+
+	template<class T = double, class C = double>
+	class instrument {
+		size_t n_;
+		const T* t_;
+		const C* c_;
+	public:
+		instrument(size_t n, const T* t, const C* c)
+			: n_(n), t_(t), c_(c)
+		{ }
+		virtual ~instrument()
+		{ }
+		size_t size(void) const
+		{
+			return n_;
+		}
+		const T* time(void) const
+		{
+			return t_;
+		}
+		const C* flow(void) const
+		{
+			return c_;
+		}
+	};
+
 namespace pwflat {
 
 	template<class T = double, class F = double>
@@ -17,10 +43,6 @@ namespace pwflat {
 		{ }
 		// use this to call value, spot, discount, etc.
 		curves::pwflat::forward<T,F> forward(void)
-		{
-			return t_.size() ? curves::pwflat::forward<T,F>(t_.size(), &t_[0], &f_[0]) : curves::pwflat::forward<T,F>();
-		}
-		const curves::pwflat::forward<T,F>& forward(void) const
 		{
 			return t_.size() ? curves::pwflat::forward<T,F>(t_.size(), &t_[0], &f_[0]) : curves::pwflat::forward<T,F>();
 		}

@@ -24,6 +24,34 @@ namespace xll
             {typeof(System.UInt32), new string[] {"XLL_WORDX", "size_t"}}
         };
 
+        static string CType(Type type)
+        {
+            if (type.BaseType == typeof(System.Array))
+            {
+                return "_FP*";
+            }
+            if (type.IsClass)
+            {
+                return "HANDLEX";
+            }
+
+            return toc[type][(int)toc_type.C_NAME];
+
+        }
+        static string ExcelType(Type type)
+        {
+            if (type.BaseType == typeof(System.Array))
+            {
+                return "XLL_FPX";
+            }
+            if (type.IsClass)
+            {
+                return "XLL_HANDLEX";
+            }
+
+            return toc[type][(int)toc_type.XLL_NAME];
+        }
+
         static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
         static string h_pre = "// {0}.h - top level header\n" +
             "// " + copyright + "\n" +
@@ -121,15 +149,15 @@ namespace xll
                     string name = t.Attribute("name").Value; // M:namespace.class
                     string summary = t.Element("summary").Value;
                     name = name.Substring(2);
-                    string ns = name.Substring(0, name.IndexOf('.'));
-                    string cl = name.Substring(name.IndexOf('.') + 1);
+                    string ns = name.Substring(0, name.LastIndexOf('.'));
+                    string cl = name.Substring(name.LastIndexOf('.') + 1);
 
                     if (ns == cl)
                     {
                         continue; // skip top level
                     }
 
-                    StreamWriter xll_c = new StreamWriter(String.Concat(xll_dir, cl, @".cpp"));
+                    StreamWriter xll_c = new StreamWriter(String.Concat(xll_dir, name.Replace(".","_"), @".cpp"));
 
                     xll_c.WriteLine(c_pre, cl, cl.ToLower(), top_header);
 
@@ -140,7 +168,7 @@ namespace xll
                         string macm = m.Attribute("name").Value; // M:Assembly.Class.Method(Args)
                         string acm = macm.Substring(2, macm.IndexOf('(') - 2); // Assembly.Class.Method
                         string ac = acm.Substring(0, acm.LastIndexOf('.')); // Assembly.Class
-                        string category = ac.Substring(0, ac.LastIndexOf('.')); // Assembly
+                        string category = ac.Substring(0, ac.IndexOf('.')); // Assembly
                         string method = acm.Substring(acm.LastIndexOf('.') + 1); // Method
 
                         MethodInfo mi = xll_dll.GetType(ac).GetMethod(method);
@@ -155,12 +183,12 @@ namespace xll
                         string Args = "";
                         for (int i = 0; i < param.Length; ++i)
                         {
-                            Args += "\t.Arg(" + toc[pi[i].ParameterType][(int)toc_type.XLL_NAME];
+                            Args += "\t.Arg(" + ExcelType(pi[i].ParameterType);
                             Args += ", _T(\"" + param[i].Attribute("name").Value + "\")";
                             Args += ", _T(\"" + param[i].Value + "\"))\n";
                         }
                         xll_c.WriteLine(addin_decl, c_name(ac, method), 
-                            toc[rt][(int)toc_type.XLL_NAME], xll_name(ac, method),
+                            ExcelType(rt), xll_name(ac, method),
                             Args, category, m.Element("summary").Value.Trim(), m.Element("remarks").Value.Trim().Replace("\n", "\")\n\t_T(\""));
 
                         string body = "<body>";
@@ -176,7 +204,7 @@ namespace xll
                                 body = "result = " + Result.Value + ";";
                         }
                         
-                        xll_c.WriteLine(c_impl, decl, toc[rt][(int)toc_type.C_NAME], body);
+                        xll_c.WriteLine(c_impl, decl, CType(rt), body);
                     }
 
                     xll_c.Close();
@@ -184,7 +212,7 @@ namespace xll
             }
         }
 
-        // return_type name(arg_type arg,...)
+        // C declaration: return_type name(arg_type arg,...)
         static string Decl(MethodInfo mi, string ac, string method)
         {
             string args = "";
@@ -195,14 +223,12 @@ namespace xll
                 {
                     args += ", ";
                 }
-                args += toc[pi[i].ParameterType][(int)toc_type.C_NAME];
+                args += CType(pi[i].ParameterType);
                 args += " ";
                 args += pi[i].Name;
             }
 
-            string result = toc[mi.ReturnType.UnderlyingSystemType][(int)toc_type.C_NAME];
-
-            return String.Format(c_decl, c_name(ac, method), result, args);
+            return String.Format(c_decl, c_name(ac, method), CType(mi.ReturnType), args);
         }
 
         // name(arg,...)
@@ -219,7 +245,7 @@ namespace xll
                 }
 
                 // FP data type
-                if (pi[i].ParameterType.IsArray && pi[i].ParameterType.UnderlyingSystemType == typeof(System.Double))
+                if (pi[i].ParameterType.IsArray && pi[i].ParameterType == typeof(System.Double))
                 {
                     call += "size(*" + pi[i].Name + "), " + pi[i].Name + "->array";
                 }

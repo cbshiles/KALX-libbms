@@ -76,6 +76,7 @@
     <ClCompile Include="curves.cpp" />
     <ClCompile Include="piecewise_polynomial.cpp" />
     <ClCompile Include="polynomial.cpp" />
+    <ClCompile Include="yield_curve.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="curves.xml">
