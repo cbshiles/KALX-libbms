@@ -11,88 +11,47 @@ using System.Xml;
 
 namespace xll
 {
-    // C# to Excel and C types
-    public enum toc_type { XLL_NAME, C_NAME };
-
     class Program
     {
-        // translate C# types to Excel and C types
-        static Dictionary<Type, string[]> toc = new Dictionary<Type, string[]> {
-            {typeof(System.Boolean), new string[] {"XLL_BOOLX", "BOOL"}},
-            {typeof(System.Double), new string[] {"XLL_DOUBLEX", "double"}},
-            {typeof(System.Double[]), new string[] {"XLL_FPX", "_FP*"}},
-            {typeof(System.UInt32), new string[] {"XLL_WORDX", "size_t"}}
-        };
+        static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
 
+        // translate C# types C types
         static string CType(Type type)
         {
             if (type.BaseType == typeof(System.Array))
-            {
                 return "_FP*";
-            }
-            if (type.IsClass)
-            {
+            if (type == typeof(System.Object))
                 return "HANDLEX";
-            }
+            if (type == typeof(System.Double))
+                return "double";
+            if (type == typeof(System.String))
+                return "xcstr";
+            if (type == typeof(System.Boolean))
+                return "BOOL";
+            if (type == typeof(System.UInt32))
+                return "size_t";
 
-            return toc[type][(int)toc_type.C_NAME];
-
+            return "<UNKNOWN>";
         }
+        // translate C# types to Excel types
         static string ExcelType(Type type)
         {
             if (type.BaseType == typeof(System.Array))
-            {
                 return "XLL_FPX";
-            }
-            if (type.IsClass)
-            {
+            if (type == typeof(System.Object))
                 return "XLL_HANDLEX";
-            }
+            if (type == typeof(System.Double))
+                return "XLL_DOUBLEX";
+            if (type == typeof(System.String))
+                return "XLL_CSTRINGX";
+            if (type == typeof(System.Boolean))
+                return "XLL_BOOLX";
+            if (type == typeof(System.UInt32))
+                return "XLL_WORDX";
 
-            return toc[type][(int)toc_type.XLL_NAME];
+            return "<UNKNOWN>";
         }
-
-        static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
-        static string h_pre = "// {0}.h - top level header\n" +
-            "// " + copyright + "\n" +
-            "// Uncomment the line below to compile for Excel 2007 and later.\n" +
-            "//#define EXCEL12\n" +
-            "#pragma once\n" +
-            "#include \"xll/xll.h\"\n"+
-            "\n#define CATEGORY _T(\"{0}\")\n";
-        static string c_pre = "// {0}.cpp\n" +
-            "// " + copyright + "\n" +
-            "#include \"../{1}.h\"\n" +
-            "#include \"{2}\"\n" +
-            "\nusing namespace xll;\n";
-        static string c_decl = "{1} WINAPI xll_{0}({2})";
-        static string addin_decl = "static AddInX xai_{0}(\n" +
-            "\tFunctionX({1}, _T(\"?xll_{0}\"), _T(\"{2}\"))\n" +
-            "{3}" +
-            "\t.Category(_T(\"{4}\"))\n" +
-            "\t.FunctionHelp(_T(\"{5}\"))\n" +
-            "\t.Documentation(_T(\"{6}\"))\n" +
-            ");";
-        static string c_impl = "{0}\n"+
-            "{{\n" +
-            "#pragma XLLEXPORT\n" +
-            "\t{1} result(0);\n\n" +
-            "\ttry {{\n" +
-            "\t\t{2}\n" +
-            "\t}}\n" +
-            "\tcatch (const std::exception& ex) {{\n" +
-            "\t\tXLL_ERROR(ex.what());\n" +
-            "\t}}\n\n" +
-            "\treturn result;\n" +
-            "}}\n";
-        static string top_level = "// {0}.cpp - top level documentation\n" +
-            "#include \"{0}.h\"\n" +
-            "\nusing namespace xll;\n" +
-            "\nstatic AddInX xai_{0}_document(\n"+
-            "\tDocumentX(CATEGORY)\n"+
-            "\t.Documentation(_T(\"{1}\"))\n"+
-            ");\n";
-
+ 
         static string c_name(string ac, string m)
         {
             return ac.ToLower().Replace('.', '_') + "_" + m.ToLower();
@@ -102,45 +61,206 @@ namespace xll
             return ac.ToUpper() + "." + m.ToUpper();
         }
 
+        // write out class/category top level header file
+        static string Header(string xll_dir, XElement members)
+        {
+            string h_pre = "// {0}.h - top level header\n" +
+                "// " + copyright + "\n" +
+                "// Uncomment the line below to compile for Excel 2007 and later.\n" +
+                "//#define EXCEL12\n" +
+                "#pragma once\n" +
+                "#include \"xll/xll.h\"\n" +
+                "\n#define CATEGORY _T(\"{0}\")\n" +
+                "\ntypedef xll::traits<XLOPERX>::xcstr xcstr;\n";
+            string c_pre = "// {0}.cpp - top level documentation\n" +
+                "#include \"{0}.h\"\n" +
+                "\nusing namespace xll;\n" +
+                "\nstatic AddInX xai_{0}_document(\n"+
+                "\tDocumentX(CATEGORY)\n"+
+                "\t.Documentation(_T(\"{1}\"))\n"+
+                ");\n";
+            string category = null;
+
+            foreach (var t in from m in members.Elements("member")
+                              where m.Attribute("name").Value.StartsWith("T:")
+                              select m)
+            {
+                string summary = t.Element("summary").Value;
+                string name = t.Attribute("name").Value; // M:namespace.class
+
+                name = name.Substring(2);
+                string ns = name.Substring(0, name.IndexOf('.'));
+                string cl = name.Substring(name.IndexOf('.') + 1);
+
+                if (ns == cl)
+                {
+                    category = cl;
+                    StreamWriter xll_h = new StreamWriter(String.Concat(xll_dir, category + ".h"));
+                    xll_h.Write(h_pre, cl);
+                    xll_h.Close();
+
+                    StreamWriter xll_cpp = new StreamWriter(String.Concat(xll_dir, cl + ".cpp"));
+                    xll_cpp.Write(c_pre, cl, summary.Trim().Replace("\n", "\")\n\t_T(\""));
+                    xll_cpp.Close();
+
+                    break;
+                }
+            }
+
+            return category;
+        }
+
+        public class ParseType
+        {
+            public string namespace_;
+            public string name_;
+            public ParseType(Assembly xll_dll, string type)
+            {
+                Type t = xll_dll.GetType(type);
+                namespace_ = t.Namespace;
+                name_ = t.Name;
+            }
+            public string CPre(string name, string category)
+            {
+                string c_pre = "// {0}.cpp\n" +
+                    "// " + copyright + "\n" +
+                    "#include \"../{1}.h\"\n" +
+                    "#include \"{2}.h\"\n" +
+                    "\nusing namespace xll;\n";
+
+                return String.Format(c_pre, name, name.ToLower(), category);
+            }
+        }
+
+        public class ParseMethod
+        {
+            public string type_;
+            public string method_;
+            MethodInfo mi_;
+            Type rt_; // reutrn type
+            public ParseMethod(Assembly xll_dll, string method)
+            {
+                if (method.Contains('('))
+                    method = method.Substring(0, method.IndexOf('('));
+
+                method_ = method.Substring(method.LastIndexOf('.') + 1);
+                type_ = method.Substring(0, method.LastIndexOf('.'));
+                Type t = xll_dll.GetType(type_);
+                mi_ = t.GetMethod(method_);
+                if (mi_ != null)
+                    rt_ = mi_.ReturnType;
+                else
+                    rt_ = typeof(System.Object); // handle
+            }
+
+            // C declaration: return_type name(arg_type arg,...)
+            public string Decl()
+            {
+                string c_decl = "{1} WINAPI xll_{0}({2})";
+                string args = "";
+
+                if (mi_ != null)
+                {
+                    ParameterInfo[] pi = mi_.GetParameters();
+                    for (int i = 0; i < pi.Length; ++i)
+                    {
+                        if (i > 0)
+                        {
+                            args += ", ";
+                        }
+                        args += CType(pi[i].ParameterType);
+                        args += " ";
+                        args += pi[i].Name;
+                    }
+                }
+
+                return String.Format(c_decl, c_name(type_, method_), CType(rt_), args);
+            }
+            // AddIn definition
+            public string AddIn(XElement member)
+            {
+                string addin_decl = "static AddInX xai_{0}(\n" +
+                    "\tFunctionX({1}, _T(\"?xll_{0}\"), _T(\"{2}\"))\n" +
+                    "{3}" +
+                    "\t.Category(CATEGORY)\n" +
+                    "\t.FunctionHelp(_T(\"{4}\"))\n" +
+                    "\t.Documentation(_T(\"{5}\"))\n" +
+                    ");";
+
+                string Args = "";
+                if (mi_ != null)
+                {
+                    ParameterInfo[] pi = mi_.GetParameters();
+                    var param = member.Elements("param").ToArray();
+                    for (int i = 0; i < param.Length; ++i)
+                    {
+                        Args += "\t.Arg(" + ExcelType(pi[i].ParameterType);
+                        Args += ", _T(\"" + param[i].Attribute("name").Value + "\")";
+                        Args += ", _T(\"" + param[i].Value + "\"))\n";
+                    }
+                }
+
+                return String.Format(addin_decl, c_name(type_, method_),
+                    ExcelType(rt_),
+                    xll_name(type_, method_), Args, 
+                    member.Element("summary").Value.Trim(), 
+                    member.Element("remarks").Value.Trim().Replace("\n", "\")\n\t_T(\""));
+            }
+            public string Body(XElement member)
+            {
+                string c_impl = "{0}\n"+
+                    "{{\n" +
+                    "#pragma XLLEXPORT\n" +
+                    "\t{1} result(0);\n\n" +
+                    "\ttry {{\n" +
+                    "\t\t{2}\n" +
+                    "\t}}\n" +
+                    "\tcatch (const std::exception& ex) {{\n" +
+                    "\t\tXLL_ERROR(ex.what());\n" +
+                    "\t}}\n\n" +
+                    "\treturn result;\n" +
+                    "}}\n";
+
+                string body = "<body>";
+
+                XElement Body = member.Element("body");
+                if (Body != null)
+                    body = Body.Value;
+
+                if (Body == null)
+                {
+                    XElement Result = member.Element("result");
+                    if (Result != null)
+                        body = "result = " + Result.Value + ";";
+                }
+
+                if (method_ == "#ctor")
+                {
+                    body = String.Format(c_impl, Decl(), CType(rt_), body);
+                }
+                else
+                {
+                    body = String.Format(c_impl, Decl(), CType(rt_), body);
+                }
+
+                return body;
+            }
+
+        }
+
         static void Main(string[] args)
         {
             foreach (string file in args)
             {
                 string xll_dir = "../" + file + "/" + file + "_xll/";
-                Assembly xll_dll = Assembly.LoadFrom(String.Concat(file, @".dll"));
                 XDocument xll_xml = XDocument.Load(String.Concat(file, @".xml"), LoadOptions.None);
+                Assembly xll_dll = Assembly.LoadFrom(String.Concat(file, @".dll"));
 
                 string assembly = xll_xml.Element("doc").Element("assembly").Value;
                 XElement members = xll_xml.Element("doc").Element("members");
 
-                string top_header = null;
                 // create top level header
-                foreach (var t in from m in members.Elements("member")
-                                  where m.Attribute("name").Value.StartsWith("T:")
-                                  select m)
-                {
-                    string name = t.Attribute("name").Value; // M:namespace.class
-                    string summary = t.Element("summary").Value;
-                    name = name.Substring(2);
-                    string ns = name.Substring(0, name.IndexOf('.'));
-                    string cl = name.Substring(name.IndexOf('.') + 1);
-
-                    if (ns == cl)
-                    {
-                        top_header = cl + ".h";
-                        StreamWriter xll_h = new StreamWriter(String.Concat(xll_dir, top_header));
-                        xll_h.Write(h_pre, cl);
-                        xll_h.Close();
-
-                        StreamWriter xll_cpp = new StreamWriter(String.Concat(xll_dir, cl + ".cpp"));
-                        xll_cpp.Write(top_level, cl, summary.Trim().Replace("\n", "\")\n\t_T(\""));
-                        xll_cpp.Close();
-
-                        break;
-                    }
-                }
-
-                Debug.Assert(top_header != null);
+                string category = Header(xll_dir, members);
 
                 foreach (var t in from m in members.Elements("member")
                             where m.Attribute("name").Value.StartsWith("T:")
@@ -149,115 +269,30 @@ namespace xll
                     string name = t.Attribute("name").Value; // M:namespace.class
                     string summary = t.Element("summary").Value;
                     name = name.Substring(2);
-                    string ns = name.Substring(0, name.LastIndexOf('.'));
-                    string cl = name.Substring(name.LastIndexOf('.') + 1);
+                    ParseType pt = new ParseType(xll_dll, name);
 
-                    if (ns == cl)
-                    {
-                        continue; // skip top level
-                    }
+                    if (pt.name_ == category)
+                        continue;
 
+                    name = name.Substring(category.Length + 1);
                     StreamWriter xll_c = new StreamWriter(String.Concat(xll_dir, name.Replace(".","_"), @".cpp"));
-
-                    xll_c.WriteLine(c_pre, cl, cl.ToLower(), top_header);
+                    xll_c.WriteLine(pt.CPre(name, category));
 
                     foreach (var m in from m in members.Elements("member")
-                                      where m.Attribute("name").Value.StartsWith("M:" + name)
-                                      select m)
+                                        where m.Attribute("name").Value.StartsWith("M:" + pt.namespace_ + "." + pt.name_)
+                                        select m)
                     {
                         string macm = m.Attribute("name").Value; // M:Assembly.Class.Method(Args)
-                        string acm = macm.Substring(2, macm.IndexOf('(') - 2); // Assembly.Class.Method
-                        string ac = acm.Substring(0, acm.LastIndexOf('.')); // Assembly.Class
-                        string category = ac.Substring(0, ac.IndexOf('.')); // Assembly
-                        string method = acm.Substring(acm.LastIndexOf('.') + 1); // Method
+                        macm = macm.Substring(2);
 
-                        MethodInfo mi = xll_dll.GetType(ac).GetMethod(method);
-                        string decl = Decl(mi, ac, method);
-
-                        Type rt = mi.ReturnType.UnderlyingSystemType;
-                        var param = m.Elements("param").ToArray();
-                        ParameterInfo[] pi = mi.GetParameters();
-
-                        Debug.Assert(param.Length == pi.Length);
-
-                        string Args = "";
-                        for (int i = 0; i < param.Length; ++i)
-                        {
-                            Args += "\t.Arg(" + ExcelType(pi[i].ParameterType);
-                            Args += ", _T(\"" + param[i].Attribute("name").Value + "\")";
-                            Args += ", _T(\"" + param[i].Value + "\"))\n";
-                        }
-                        xll_c.WriteLine(addin_decl, c_name(ac, method), 
-                            ExcelType(rt), xll_name(ac, method),
-                            Args, category, m.Element("summary").Value.Trim(), m.Element("remarks").Value.Trim().Replace("\n", "\")\n\t_T(\""));
-
-                        string body = "<body>";
-                        
-                        XElement Body = m.Element("body");
-                        if (Body != null)
-                            body = Body.Value;
-
-                        if (Body == null)
-                        {
-                            XElement Result = m.Element("result");
-                            if (Result != null)
-                                body = "result = " + Result.Value + ";";
-                        }
-                        
-                        xll_c.WriteLine(c_impl, decl, CType(rt), body);
+                        ParseMethod pm = new ParseMethod(xll_dll, macm);
+                        xll_c.WriteLine(pm.Body(m));
                     }
 
                     xll_c.Close();
                 }
+  
             }
-        }
-
-        // C declaration: return_type name(arg_type arg,...)
-        static string Decl(MethodInfo mi, string ac, string method)
-        {
-            string args = "";
-            ParameterInfo[] pi = mi.GetParameters();
-            for (int i = 0; i < pi.Length; ++i)
-            {
-                if (i > 0)
-                {
-                    args += ", ";
-                }
-                args += CType(pi[i].ParameterType);
-                args += " ";
-                args += pi[i].Name;
-            }
-
-            return String.Format(c_decl, c_name(ac, method), CType(mi.ReturnType), args);
-        }
-
-        // name(arg,...)
-        static string Call(MethodInfo mi, string ac, string method)
-        {
-            string call = c_name(ac, method) + "(";
-
-            ParameterInfo[] pi = mi.GetParameters();
-            for (int i = 0; i < pi.Length; ++i)
-            {
-                if (i > 0)
-                {
-                    call += ", ";
-                }
-
-                // FP data type
-                if (pi[i].ParameterType.IsArray && pi[i].ParameterType == typeof(System.Double))
-                {
-                    call += "size(*" + pi[i].Name + "), " + pi[i].Name + "->array";
-                }
-                else
-                {
-                    call += pi[i].Name;
-                }
-            }
-
-            call += ")";
-
-            return call;
         }
     }
 }
