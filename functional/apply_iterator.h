@@ -9,17 +9,6 @@ namespace functional {
 	class apply_iterator : public std::iterator<std::input_iterator_tag, typename std::iterator_traits<I>::value_type> {
 		apply_iterator& operator=(const apply_iterator& i);
 	protected:
-		typedef typename std::iterator_traits<I>::value_type value_type;
-		const F& f_;
-		I i_;
-	public:
-		apply_iterator(const F& f, I i) 
-			: f_(f), i_(i) 
-		{ }
-		apply_iterator(const apply_iterator& i)
-			: f_(i.f_), i_(i.i_)
-		{
-		}
 		~apply_iterator()
 		{ }
 		operator I(void)

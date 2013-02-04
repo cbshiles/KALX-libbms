@@ -16,10 +16,9 @@ namespace Curves {
 		/// <include file='curves.xml' path='curves/basis_spline/result[@name="value"]' />
 		static double value(double x, size_t i, size_t k, array<double>^ t)
 		{
-			pin_ptr<double> pt(&t[0]);
-			const double* t_(pt);
+			pin_ptr<double> t_(&t[0]);
 
-			return curves::basis_spline::value<double,double>(k, t->Length, t_)(i, x);
+			return curves::basis_spline::value<double,double>(k, t->Length, static_cast<const double*>(t_))(i, x);
 		}
 
 		/// <summary>Integral of i-th basis spline of order k given knots t</summary>
@@ -31,10 +30,9 @@ namespace Curves {
 		/// <include file='curves.xml' path='curves/basis_spline/result[@name="integral"]' />
 		static double integral(double x, size_t i, size_t k, array<double>^ t)
 		{
-			pin_ptr<double> pt(&t[0]);
-			const double* t_(pt);
+			pin_ptr<double> t_(&t[0]);
 
-			return curves::basis_spline::integral<double,double>(k, t->Length, t_)(i, x);
+			return curves::basis_spline::integral<double,double>(k, t->Length, static_cast<const double*>(t_))(i, x);
 		}
 
 		/// <summary>Derivative of i-th basis spline of order k given knots t</summary>
@@ -46,10 +44,9 @@ namespace Curves {
 		/// <include file='curves.xml' path='curves/basis_spline/result[@name="derivative"]' />
 		static double derivative(double x, size_t i, size_t k, array<double>^ t)
 		{
-			pin_ptr<double> pt(&t[0]);
-			const double* t_(pt);
+			pin_ptr<double> t_(&t[0]);
 
-			return curves::basis_spline::derivative<double,double>(k, t->Length, t_)(i, x);
+			return curves::basis_spline::derivative<double,double>(k, t->Length, static_cast<const double*>(t_))(i, x);
 		}
 	};
 

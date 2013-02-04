@@ -1,4 +1,7 @@
 ﻿// Program.cs - create Excel add-in files
+/*
+If method returns reference to object, then insert this handle as first argument.!!!
+*/
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,53 +18,50 @@ namespace xll
     {
         static string copyright = "Copyright 2013 (c) KALX, LLC. No warranty is made. All rights reserved.";
 
+        enum toc_type {XLL_NAME, C_NAME};
+        static Dictionary<string, string[]> toc = new Dictionary<string, string[]>
+        {
+            {"Double", new string[] {"XLL_DOUBLEX", "double"}},
+            {"Double[]", new string[] {"XLL_FPX", "_FP*"}},
+            {"String", new string[] {"XLL_CSTRINGX", "xcstr"}},
+            {"Boolean", new string[] {"XLL_BOOLX", "BOOL"}},
+            {"UInt32", new string[] {"XLL_WORDX", "size_t"}},
+            {"Object", new string[] {"XLL_HANDLEX", "HANDLEX"}},
+        };
+
         // translate C# types C types
         static string CType(Type type)
         {
-            if (type.BaseType == typeof(System.Array))
-                return "_FP*";
-            if (type == typeof(System.Object))
-                return "HANDLEX";
-            if (type == typeof(System.Double))
-                return "double";
-            if (type == typeof(System.String))
-                return "xcstr";
-            if (type == typeof(System.Boolean))
-                return "BOOL";
-            if (type == typeof(System.UInt32))
-                return "size_t";
+            string[] ctype;
+            
+            if (toc.TryGetValue(type.Name, out ctype))
+                return ctype[(int)toc_type.C_NAME];
 
-            return "<UNKNOWN>";
+            return "HANDLEX";
         }
         // translate C# types to Excel types
         static string ExcelType(Type type)
         {
-            if (type.BaseType == typeof(System.Array))
-                return "XLL_FPX";
-            if (type == typeof(System.Object))
-                return "XLL_HANDLEX";
-            if (type == typeof(System.Double))
-                return "XLL_DOUBLEX";
-            if (type == typeof(System.String))
-                return "XLL_CSTRINGX";
-            if (type == typeof(System.Boolean))
-                return "XLL_BOOLX";
-            if (type == typeof(System.UInt32))
-                return "XLL_WORDX";
+            string[] ctype;
 
-            return "<UNKNOWN>";
+            if (toc.TryGetValue(type.Name, out ctype))
+                return ctype[(int)toc_type.XLL_NAME];
+
+            return "XLL_HANDLEX";
         }
- 
+
+        // C# to C name
         static string c_name(string ac, string m)
         {
             return ac.ToLower().Replace('.', '_') + "_" + m.ToLower();
         }
+        // C# to Excel name
         static string xll_name(string ac, string m)
         {
             return ac.ToUpper() + "." + m.ToUpper();
         }
 
-        // write out class/category top level header file
+        // write out class/category top level header and documentation file
         static string Header(string xll_dir, XElement members)
         {
             string h_pre = "// {0}.h - top level header\n" +
@@ -79,6 +79,7 @@ namespace xll
                 "\tDocumentX(CATEGORY)\n"+
                 "\t.Documentation(_T(\"{1}\"))\n"+
                 ");\n";
+
             string category = null;
 
             foreach (var t in from m in members.Elements("member")
@@ -137,7 +138,8 @@ namespace xll
             public string type_;
             public string method_;
             MethodInfo mi_;
-            Type rt_; // reutrn type
+            Type rt_; // return type
+            bool static_; // true if static method
             public ParseMethod(Assembly xll_dll, string method)
             {
                 if (method.Contains('('))
@@ -147,17 +149,22 @@ namespace xll
                 type_ = method.Substring(0, method.LastIndexOf('.'));
                 Type t = xll_dll.GetType(type_);
                 mi_ = t.GetMethod(method_);
-                if (mi_ != null)
+                if (mi_ != null && toc.ContainsKey(mi_.ReturnType.Name))
+                {
                     rt_ = mi_.ReturnType;
+                    static_ = mi_.IsStatic;
+                }
                 else
+                {
                     rt_ = typeof(System.Object); // handle
+                }
             }
 
             // C declaration: return_type name(arg_type arg,...)
             public string Decl()
             {
                 string c_decl = "{1} WINAPI xll_{0}({2})";
-                string args = "";
+                string args = static_ ? "" : "HANDLEX h, ";
 
                 if (mi_ != null)
                 {
@@ -187,7 +194,8 @@ namespace xll
                     "\t.Documentation(_T(\"{5}\"))\n" +
                     ");";
 
-                string Args = "";
+                //!!! add name of underlying class
+                string Args = static_ ? "" : "\t.Arg(XLL_HANDLEX, _T(\"Handle\"), _T(\"is a handle\"))\n";
                 if (mi_ != null)
                 {
                     ParameterInfo[] pi = mi_.GetParameters();
@@ -221,17 +229,21 @@ namespace xll
                     "\treturn result;\n" +
                     "}}\n";
 
-                string body = "<body>";
+                string body = null;
 
                 XElement Body = member.Element("body");
                 if (Body != null)
                     body = Body.Value;
 
-                if (Body == null)
+                if (body == null)
                 {
                     XElement Result = member.Element("result");
                     if (Result != null)
                         body = "result = " + Result.Value + ";";
+                }
+
+                if (body == null) // make a stab
+                {
                 }
 
                 if (method_ == "#ctor")
@@ -290,8 +302,7 @@ namespace xll
                     }
 
                     xll_c.Close();
-                }
-  
+                } 
             }
         }
     }
