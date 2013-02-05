@@ -170,7 +170,7 @@ namespace range {
 
 	template<class T>
 	class row_iterator : public std::iterator<std::random_access_iterator_tag, typename row<T>> {
-		row<T>* pr_;
+		row<T> r_;
 	public:
 		row_iterator(row<T>* pr = nullptr)
 			: pr_(pr)
@@ -354,11 +354,11 @@ namespace range {
 		}
 		row_iterator<T> end(void)
 		{
-			row_iterator<T> i(this);
+			row<t> r(r_);
 
-			i.r_ += r_.size();
+			r.r_ += r_.size();
 
-			return i;
+			return row_iterator<T>(r);
 		}
 	};
 	// count by 1
