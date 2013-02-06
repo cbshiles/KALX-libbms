@@ -104,7 +104,7 @@ namespace range {
 
 		bool operator==(const wrap<T>& u) const
 		{
-			return (n_ == u.n_ && begin() == u.begin()) || std::equal(begin(), end(), u.begin());
+			return n_ == u.n_ && (begin() == u.begin()) || std::equal(begin(), end(), u.begin());
 		}
 		bool operator<(const wrap<T>& u) const
 		{
@@ -167,6 +167,7 @@ namespace range {
 		{
 			if (this != &r) {
 				std::vector<T>::operator=(r);
+				wrap<T>(*this);
 			}
 
 			return *this;
@@ -175,7 +176,7 @@ namespace range {
 		{
 			if (this != &r) {
 				std::vector<T>::operator=(r);
-				wrap<T>::operator=(r);
+				wrap<T>::operator=(*this);
 			}
 
 			return *this;
@@ -186,6 +187,12 @@ namespace range {
 		{
 			std::vector<T>::push_back(t);
 			++n_;
+			t_ = &operator[](0);
+		}
+		void append(size_t n, const T* t)
+		{
+			std::vector<T>::insert(std::vector<T>::end(), t, t + n)
+			n_ += n;
 			t_ = &operator[](0);
 		}
 	};
@@ -217,7 +224,10 @@ namespace range {
 	template<class T>
 	inline hold<T> sequence(T start, T stop, T step = 1)
 	{
-		hold<T> t(((stop - start) + 1)/step);
+		T n = (stop - start + 1)/step;
+		ensure (n >= 0);
+
+		hold<T> t(static_cast<size_t>(n));
 
 		sequence(t, start, step);
 		
@@ -239,12 +249,6 @@ namespace range {
 		return n >= 0 ? wrap<T>(a.size() - n, a + n) : wrap<T>(a.size() + n, a);
 	}
 
-	template<class I>
-	inline std::function<I(I)> stride(I s, I o = 0)
-	{
-		return [s,o](I i) { return i*s + o; };
-	}
-
 	template<class T>
 	inline std::function<size_t(size_t i)> mask(const wrap<T>& m)
 	{
@@ -262,7 +266,7 @@ namespace range {
 	template<class T>
 	inline hold<size_t> grade(const wrap<T>& a, I n = 0)
 	{
-		sequence<size_t> b(0, a.size() - 1);
+		hold<size_t> b = sequence<size_t>(0, a.size() - 1);
 
 		std::function<bool(size_t, size_t)> cmp;
 		if (n >= 0)

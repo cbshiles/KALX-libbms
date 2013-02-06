@@ -6,41 +6,9 @@ void index_test(void);
 void wrap_test(void);
 void hold_test(void);
 void row_test(void);
+void take_test(void);
+void grade_test(void);
 /*
-using namespace range;
-template<class T>
-void test_range_take(void)
-{
-	T _t[] = {1,2,3};
-	wrap<T> t(3, _t);
-
-	ensure (take(2,t)[0] == _t[0]);
-	ensure (take(2,t)[1] == _t[1]);
-	ensure (take(2,t)[2] == _t[0]);
-	ensure (take(2,t)[-1] == _t[1]);
-
-	ensure (take(-2,t)[0] == _t[1]);
-	ensure (take(-2,t)[1] == _t[2]);
-	ensure (take(-2,t)[2] == _t[1]);
-	ensure (take(-2,t)[-1] == _t[2]);
-}
-
-template<class T>
-void test_range_drop(void)
-{
-	T _t[] = {1,2,3};
-	wrap<T> t(3, _t);
-
-	ensure (drop(1,t)[0] == _t[1]);
-	ensure (drop(1,t)[1] == _t[2]);
-	ensure (drop(1,t)[2] == _t[1]);
-	ensure (drop(1,t)[-1] == _t[2]);
-
-	ensure (drop(-1,t)[0] == _t[0]);
-	ensure (drop(-1,t)[1] == _t[1]);
-	ensure (drop(-1,t)[2] == _t[0]);
-	ensure (drop(-1,t)[-1] == _t[1]);
-}
 
 template<class T>
 void test_range_stride(void)
@@ -63,30 +31,6 @@ void test_range_mask(void)
 	ensure (t[mask(wrap<bool>(3, m))(1)] == _t[2]);
 }
 
-template<class T>
-void test_range_grade(void)
-{
-	T _t[] = {3,1,4,2};
-	wrap<T> t(4, _t);
-
-	hold<size_t> i = grade<T>(t);
-	for (T j = 0; j < 4; ++j)
-		ensure (t[i[j]] == j + 1);
-
-	i = grade<T>(t, 2);
-	ensure (t[i[0]] == 1);
-	ensure (t[i[1]] == 2);
-
-	i = grade<T>(t, -1);
-	ensure (t[i[0]] == 4);
-	ensure (t[i[1]] == 3);
-	ensure (t[i[2]] == 2);
-	ensure (t[i[3]] == 1);
-
-	i = grade<T>(t, -2);
-	ensure (t[i[0]] == 4);
-	ensure (t[i[1]] == 3);
-}
 
 template<class T>
 void test_range_wrapper2(void)
@@ -129,6 +73,8 @@ main(int ac, const char* av[])
 		wrap_test();
 		hold_test();
 		row_test();
+		take_test();
+		grade_test();
 //		test_range();
 	}
 	catch (const std::exception& ex) {
