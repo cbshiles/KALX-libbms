@@ -6,7 +6,7 @@
 
 namespace valuation {
 
-	template<class T>
+	template<class T = double>
 	class gbm {
 		T mu_, sigma_;
 	public:
@@ -15,7 +15,7 @@ namespace valuation {
 		{ }
 	};
 
-	template<class T>
+	template<class T = double>
 	inline std::function<T(T)> pdf(const gbm<T>& m)
 	{
 		return [m](T t) -> T {
@@ -33,15 +33,22 @@ namespace valuation {
 	template<class T, class I, class M>
 	inline T value(I i, M m);
 
-	template<class T>
+	template<class T = double>
 	struct put {
 		T t, k;
 		put(T _t, T _k)
 			: t(_t), k(_k)
 		{ }
 	};
+	template<class T = double>
+	struct call {
+		T t, k;
+		call(T _t, T _k)
+			: t(_t), k(_k)
+		{ }
+	};
 
-	template<class T>
+	template<class T = double>
 	struct bms {
 		T f, s;
 		bms(T _f, T _s)
@@ -49,10 +56,11 @@ namespace valuation {
 		{ }
 	};
 
+	// k P(F <= k) - f P(F exp(sigma^2t) <= k)
 	template<class T>
-	inline T value(put<T> p, bms<T> m)
+	inline T value(put<T> i, bms<T> m)
 	{
-		return p.k*cdf(gbm<T>(0,m.s))(p.k);// - m.f*cdf(gbm<T>(bms<T>(m.f,m.s)))(p.k);
+		return i.k * cdf(gbm<T>(0,m.s))(i.k) - m.f * cdf(gbm<T>(m.s*m.s*i.t,m.s))(i.k);
 	}
 
 } // namespace valuation

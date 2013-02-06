@@ -37,6 +37,9 @@ void index_test_(void)
 	ensure (t[0] == 4);
 	ensure (_t[1] == 6);
 	ensure (t[2] == 8);
+
+	hold<T> u = sequence<T>(4, 8, 2);
+	ensure (u == t);
 }
 
 void index_test(void)

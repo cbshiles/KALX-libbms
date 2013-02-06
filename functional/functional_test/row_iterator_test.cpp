@@ -1,5 +1,5 @@
 // row_iterator_test.cpp - test row_iterator
-#include "../range.h"
+#include "../row_iterator.h"
 
 using namespace range;
 

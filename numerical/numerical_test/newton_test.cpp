@@ -5,7 +5,7 @@
 using namespace numerical;
 
 template<class T>
-void test_numerical_root1d_newton_(size_t N = 10000)
+void root1d_newton_test_(size_t N = 10000)
 {
 	srng rng;
 	T eps = std::numeric_limits<T>::epsilon();
@@ -35,8 +35,8 @@ void test_numerical_root1d_newton_(size_t N = 10000)
 }
 
 void
-numerical_root1d_newton_test(void)
+root1d_newton_test(void)
 {
-	test_numerical_root1d_newton_<double>();
-	test_numerical_root1d_newton_<float>();
+	root1d_newton_test_<double>();
+	root1d_newton_test_<float>();
 }

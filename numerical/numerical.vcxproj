@@ -81,6 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="exp.h" />
     <ClInclude Include="newton.h" />
     <ClInclude Include="numerical.h" />
     <ClInclude Include="srng.h" />

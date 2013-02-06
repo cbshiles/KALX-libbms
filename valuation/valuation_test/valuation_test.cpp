@@ -6,10 +6,9 @@ using namespace valuation;
 
 int main(void)
 {
-	put<double> p(1,2);
-	bms<double> m(3,4);
+	double forward(100), strike(100), volatility(0.2), expiration(0.25);
 
-	double v = value(p, m);
+	double v = value(put<>(strike, expiration), bms<>(forward,volatility));
 
 	return 0;
 }

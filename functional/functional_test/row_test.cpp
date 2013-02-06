@@ -1,5 +1,5 @@
 // row_test.cpp
-#include "../range.h"
+#include "../row_iterator.h"
 
 using namespace range;
 
@@ -34,7 +34,28 @@ void row_iterator_test_(void)
 	sequence<T>(w, 1); // 1, 2, ..., 6
 
 	row<T> r(w, 2);
+	row_iterator<T> ir(r);
+	ensure (*ir == row<T>(w,2));
+	++ir;
+	ensure (*ir == row<T>(w,2) + 1);
+	ir++;
+	ensure (*ir == row<T>(w,2) + 2);
+
+	ensure (r.size() == 2);
+	ensure (r[0] == t[0]);
+	ensure (r[1] == t[1]);
+	ir = row_iterator<T>(r);
+	ensure (ir == r.begin());
+	ir += 3;
+	ensure (ir == r.end());
+	
 	std::reverse(r.begin(), r.end());
+	ensure (t[0] == 5);
+	ensure (t[1] == 6);
+	ensure (t[2] == 3);
+	ensure (t[3] == 4);
+	ensure (t[4] == 1);
+	ensure (t[5] == 2);
 }
 
 void row_test(void)

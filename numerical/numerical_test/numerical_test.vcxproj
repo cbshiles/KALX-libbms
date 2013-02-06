@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="exp_test.cpp" />
     <ClCompile Include="newton_test.cpp" />
     <ClCompile Include="numerical_test.cpp" />
   </ItemGroup>
