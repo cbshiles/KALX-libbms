@@ -75,6 +75,10 @@ namespace range {
 		{
 			return n_;
 		}
+		void size(size_t n)
+		{
+			n_ = n;
+		}
 		operator T*()
 		{
 			return t_;
@@ -167,7 +171,8 @@ namespace range {
 		{
 			if (this != &r) {
 				std::vector<T>::operator=(r);
-				wrap<T>(*this);
+				n_ = r.n_;
+				t_ = &std::vector<T>::operator[](0);
 			}
 
 			return *this;
@@ -176,13 +181,20 @@ namespace range {
 		{
 			if (this != &r) {
 				std::vector<T>::operator=(r);
-				wrap<T>::operator=(*this);
+				n_ = r.n_;
+				t_ = &std::vector<T>::operator[](0);
 			}
 
 			return *this;
 		}
 		~hold()
 		{ }
+		void resize(size_t n)
+		{
+			std::vector<T>::resize(n);
+			n_ = n;
+			t_ = &std::vector<T>::operator[](0);
+		}
 		void push_back(T t)
 		{
 			std::vector<T>::push_back(t);
@@ -235,49 +247,70 @@ namespace range {
 	}
 	
 	template<class T>
-	inline wrap<T> take(I n, wrap<T>& a)
+	inline wrap<T> take(I n, wrap<T>& a, I c = 1)
 	{
-		ensure (n <= static_cast<I>(a.size()));
-		ensure (-n <= static_cast<I>(a.size()));
+		ensure (n*c <= static_cast<I>(a.size()));
+		ensure (-n*c <= static_cast<I>(a.size()));
 
-		return n >= 0 ? wrap<T>(n, a) : wrap<T>(-n, a + a.size() + n);
+		return n >= 0 ? wrap<T>(n*c, a) : wrap<T>(-n*c, a + a.size() + n*c);
 	}
 
 	template<class T>
-	inline wrap<T> drop(I n, wrap<T>& a)
+	inline wrap<T> drop(I n, wrap<T>& a, I c = 1)
 	{
-		return n >= 0 ? wrap<T>(a.size() - n, a + n) : wrap<T>(a.size() + n, a);
+		return n >= 0 ? wrap<T>(a.size() - n*c, a + n*c) : wrap<T>(a.size() + n*c, a);
 	}
 
-	template<class T>
-	inline std::function<size_t(size_t i)> mask(const wrap<T>& m)
+	template<class T, class U>
+	inline void mask(wrap<T>& a, const wrap<U>& m, I c = 1)
 	{
-		return [m](size_t i) -> size_t {
-			for (size_t j = 0; j < m.size(); ++j) {
-				if (m[j] && !i--)
-					return j;
+		ensure (a.size() == m.size()*c);
+
+		size_t j = 0; // nonzero mask index
+		for (size_t i = 0; i < a.size(); i += c)
+			if (m[i])
+				std::copy(a + i, a + i + c, a + j++);
+		
+		a.size(j*c);
+	}
+	// grade n elements of a, decreasing if n < 0, s is the list of columns on which to sort
+	template<class T>
+	inline hold<size_t> grade(const wrap<T>& a, I n = 0, I c = 1, const wrap<size_t>& s = wrap<size_t>())
+	{
+		bool desc(false);
+		if (n < 0) {
+			desc = true;
+			n = -n;
+		}
+
+		hold<size_t> b = sequence<size_t>(0, a.size()/c - 1);
+		
+		std::function<bool(T,T)> gl = std::less<T>();
+		if (desc)
+			gl = std::greater<T>();
+
+		std::function<bool(size_t, size_t)> cmp = [a,c,s,gl](size_t i, size_t j) -> bool {
+			if (s.size() == 0)
+				return gl(a[i*c], a[j*c]);
+			for (size_t k = 0; k < s.size(); ++k) {
+				T ai = a[i*c + s[k]];
+				T aj = a[j*c + s[k]];
+				if (gl(ai, aj))
+					return true;
+				if (ai != aj)
+					return false;
 			}
-
-			return static_cast<size_t>(-1);
+			
+			return false;
 		};
-	}
-
-	// grade n elements of a, decreasing if n < 0
-	template<class T>
-	inline hold<size_t> grade(const wrap<T>& a, I n = 0)
-	{
-		hold<size_t> b = sequence<size_t>(0, a.size() - 1);
-
-		std::function<bool(size_t, size_t)> cmp;
-		if (n >= 0)
-			cmp = [a](size_t i, size_t j) { return a[i] < a[j];};
-		else
-			cmp = [a](size_t i, size_t j) { return a[i] > a[j];};
 
 		if (n == 0 || n == -1)
 			std::sort(b.begin(), b.end(), cmp);
 		else
-			std::partial_sort(b.begin(), b.begin() + (n > 0 ? n : -n), b.end(), cmp);
+			std::partial_sort(b.begin(), b.begin() + n, b.end(), cmp);
+
+//		if (desc)
+//			std::reverse(b.begin(), b.end());
 
 		return b;
 	}

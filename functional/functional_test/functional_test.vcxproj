@@ -77,6 +77,7 @@
     <ClCompile Include="grade_test.cpp" />
     <ClCompile Include="hold_test.cpp" />
     <ClCompile Include="index_test.cpp" />
+    <ClCompile Include="mask_test.cpp" />
     <ClCompile Include="range_test.cpp" />
     <ClCompile Include="row_iterator_test.cpp" />
     <ClCompile Include="row_test.cpp" />
