@@ -10,6 +10,7 @@ void take_test(void);
 void grade_test(void);
 void mask_test(void);
 void row_iterator_test(void);
+void sort_test(void);
 
 int
 main(int ac, const char* av[])
@@ -23,6 +24,7 @@ main(int ac, const char* av[])
 		grade_test();
 		mask_test();
 		row_iterator_test();
+		sort_test();
 	}
 	catch (const std::exception& ex) {
 		std::cerr << ex.what() << std::endl;

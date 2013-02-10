@@ -5,7 +5,7 @@
 
 namespace range {
 
-	// one row of a 2-dim array
+	// one row of a 2-dim array ??? row_view???
 	template<class T>
 	class row {
 		friend class row_iterator<T>;
@@ -23,6 +23,8 @@ namespace range {
 		{ }
 		row& operator=(const row& r)
 		{
+//			ensure (c_ == r.c_);
+
 			if (this != &r) {
 				r_ = r.r_;
 				c_ = r.c_;
@@ -227,6 +229,22 @@ namespace range {
 			r_ -= n;
 
 			return *this;
+		}
+		row_iterator operator+(size_t n) const
+		{
+			row_iterator i(*this);
+
+			i += n;
+
+			return i;
+		}
+		row_iterator operator-(size_t n) const
+		{
+			row_iterator i(*this);
+
+			i -= n;
+
+			return i;
 		}
 	};
 

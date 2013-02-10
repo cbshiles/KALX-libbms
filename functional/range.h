@@ -42,28 +42,11 @@ namespace range {
 		wrap(const wrap& a)
 			: n_(a.n_), t_(a.t_)
 		{ }
-		wrap(wrap&& a)
-			: n_(a.n_), t_(a.t_)
-		{
-			a.n_ = 0;
-			a.t_ = 0;
-		}
 		wrap& operator=(const wrap& a)
 		{
 			if (this != &a) {
 				n_ = a.n_;
 				t_ = a.t_;
-			}
-
-			return *this;
-		}
-		wrap& operator=(wrap&& a)
-		{
-			if (this != &a) {
-				n_ = a.n_;
-				t_ = a.t_;
-				a.n_ = 0;
-				a.t_ = 0;
 			}
 
 			return *this;
@@ -125,20 +108,6 @@ namespace range {
 			return t_[index(i,n_)];
 		}
 
-		wrap operator++(void)
-		{
-			n_--;
-			t_++;
-
-			return *this;
-		}
-		wrap operator+=(size_t n)
-		{
-			n_ -= n;
-			t_ += n;
-
-			return *this;
-		}
 	};
 
 	// allocate vector to wrap
@@ -189,6 +158,7 @@ namespace range {
 		}
 		~hold()
 		{ }
+
 		void resize(size_t n)
 		{
 			std::vector<T>::resize(n);
@@ -231,7 +201,7 @@ namespace range {
 	{
 		counter n(0);
 
-		std::transform(t.begin(), t.end(), t.begin(), [&n,start,step](T t) -> T { return start + n*step; });
+		std::transform(t.begin(), t.end(), t.begin(), [&n,start,step](T) -> T { return start + n*step; });
 	}
 	template<class T>
 	inline hold<T> sequence(T start, T stop, T step = 1)
@@ -241,9 +211,21 @@ namespace range {
 
 		hold<T> t(static_cast<size_t>(n));
 
-		sequence(t, start, step);
+		sequence<T>(t, start, step);
 		
 		return t;
+	}
+
+	template<class T>
+	inline wrap<T> stride(wrap<T>& a, I step, I off = 0)
+	{
+		size_t i = 0;
+		while(off + i*step < a.size())
+			a[i] = a[off + i++*step];
+
+		a.size(i);
+
+		return a;
 	}
 	
 	template<class T>
@@ -272,47 +254,6 @@ namespace range {
 				std::copy(a + i, a + i + c, a + j++);
 		
 		a.size(j*c);
-	}
-	// grade n elements of a, decreasing if n < 0, s is the list of columns on which to sort
-	template<class T>
-	inline hold<size_t> grade(const wrap<T>& a, I n = 0, I c = 1, const wrap<size_t>& s = wrap<size_t>())
-	{
-		bool desc(false);
-		if (n < 0) {
-			desc = true;
-			n = -n;
-		}
-
-		hold<size_t> b = sequence<size_t>(0, a.size()/c - 1);
-		
-		std::function<bool(T,T)> gl = std::less<T>();
-		if (desc)
-			gl = std::greater<T>();
-
-		std::function<bool(size_t, size_t)> cmp = [a,c,s,gl](size_t i, size_t j) -> bool {
-			if (s.size() == 0)
-				return gl(a[i*c], a[j*c]);
-			for (size_t k = 0; k < s.size(); ++k) {
-				T ai = a[i*c + s[k]];
-				T aj = a[j*c + s[k]];
-				if (gl(ai, aj))
-					return true;
-				if (ai != aj)
-					return false;
-			}
-			
-			return false;
-		};
-
-		if (n == 0 || n == -1)
-			std::sort(b.begin(), b.end(), cmp);
-		else
-			std::partial_sort(b.begin(), b.begin() + n, b.end(), cmp);
-
-//		if (desc)
-//			std::reverse(b.begin(), b.end());
-
-		return b;
 	}
 
 } // namespace range

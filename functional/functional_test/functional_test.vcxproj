@@ -81,6 +81,7 @@
     <ClCompile Include="range_test.cpp" />
     <ClCompile Include="row_iterator_test.cpp" />
     <ClCompile Include="row_test.cpp" />
+    <ClCompile Include="sort_test.cpp" />
     <ClCompile Include="take_test.cpp" />
     <ClCompile Include="wrap_test.cpp" />
   </ItemGroup>

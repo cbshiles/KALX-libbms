@@ -1,5 +1,5 @@
 // grade_test.cpp
-#include "../row_iterator.h"
+#include "../sort.h"
 
 using namespace range;
 
@@ -26,6 +26,13 @@ void grade_test_(void)
 	i = grade<T>(t, -2);
 	ensure (t[i[0]] == 4);
 	ensure (t[i[1]] == 3);
+
+	size_t _v[] = {1,0};
+	wrap<size_t> v(2, _v);
+	i = grade<T>(t, 2, v, -1);
+	ensure (i.size() == 2);
+	ensure (i[0] == 1);
+	ensure (i[1] == 0);
 }
 
 void grade_test(void)
