@@ -15,25 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="srng.h">
+    <ClInclude Include="gbm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ulp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="numerical.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="numerical.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

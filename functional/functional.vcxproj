@@ -85,9 +85,8 @@
     <ClInclude Include="functional.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="range.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="tfunctional.cpp" />
+    <ClInclude Include="row_iterator.h" />
+    <ClInclude Include="sort.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

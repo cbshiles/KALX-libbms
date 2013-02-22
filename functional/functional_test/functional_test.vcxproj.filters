@@ -15,24 +15,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="srng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ulp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="numerical.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="numerical.cpp">
+    <ClCompile Include="range_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="row_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="row_iterator_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="index_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wrap_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hold_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="take_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="grade_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mask_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sort_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

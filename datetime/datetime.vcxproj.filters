@@ -15,24 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="srng.h">
+    <ClInclude Include="calendar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ulp.h">
+    <ClInclude Include="cmegroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="numerical.h">
+    <ClInclude Include="datetime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="newton.h">
+    <ClInclude Include="dt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="exp.h">
+    <ClInclude Include="holiday.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="numerical.cpp">
+    <ClCompile Include="datetime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

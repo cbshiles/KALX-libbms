@@ -13,27 +13,47 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="XML Files">
+      <UniqueIdentifier>{27ad8a1c-863b-48cc-8a5e-b92d33e60cae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="srng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ulp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="numerical.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="numerical.cpp">
+    <ClCompile Include="basis_spline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="polynomial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="piecewise_polynomial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="curves.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="yield_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="basis_spline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="polynomial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="piecewise_polynomial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bootstrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="yield_curve.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="curves.xml">
+      <Filter>XML Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

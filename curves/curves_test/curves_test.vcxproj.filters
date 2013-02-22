@@ -15,24 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="srng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ulp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="numerical.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="newton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="numerical.cpp">
+    <ClCompile Include="curves_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="basis_spline_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bootstrap_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="yield_curve_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
